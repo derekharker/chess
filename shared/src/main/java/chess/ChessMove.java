@@ -8,6 +8,8 @@ package chess;
  */
 public class ChessMove {
 
+    //startPosition, etc.
+
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
     }
@@ -16,7 +18,7 @@ public class ChessMove {
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        throw new RuntimeException("Not implemented");
+        return startPosition;
     }
 
     /**
@@ -34,5 +36,10 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
         throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%s%s]", startPosition); //Add for the 3 variables
     }
 }

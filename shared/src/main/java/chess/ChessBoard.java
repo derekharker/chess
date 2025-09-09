@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Arrays;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -39,6 +41,46 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        clearBoard();
+        addAllPawns();
+        addPiece(ChessPiece.PieceType.KING, 4, 0);
+        addPiece(ChessPiece.PieceType.QUEEN, 3, 0);
+        addPiece(ChessPiece.PieceType.ROOK, 0, 7);
+        addPiece(ChessPiece.PieceType.KNIGHT, 1, 6);
+        addPiece(ChessPiece.PieceType.BISHOP, 2, 5);
+    }
+
+    private void clearBoard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = null;
+            }
+        }
+    }
+
+    private void addAllPawns() {
+        for (int col = 0; col < 8; col++) {
+            board[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+            board[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
+    }
+
+    private void addPiece(ChessPiece.PieceType type, int col1, int col2) {
+        if (type == ChessPiece.PieceType.KING || type == ChessPiece.PieceType.QUEEN) {
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+        } else {
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[7][col2] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[0][col2] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.toString(board) +
+                '}';
     }
 }

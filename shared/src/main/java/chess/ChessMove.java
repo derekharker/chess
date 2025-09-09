@@ -8,9 +8,9 @@ package chess;
  */
 public class ChessMove {
 
-    private ChessPosition startPosition;
-    private ChessPosition endPosition;
-    private ChessPiece.PieceType promotionPiece;
+    private final ChessPosition startPosition;
+    private final ChessPosition endPosition;
+    private final ChessPiece.PieceType promotionPiece;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
@@ -45,6 +45,6 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        return String.format("Start Position: %s%nEnd Position: %s%nPromotion Piece: %s%n]", startPosition, endPosition, promotionPiece);
+        return String.format("%s%s", startPosition, endPosition);
     }
 }

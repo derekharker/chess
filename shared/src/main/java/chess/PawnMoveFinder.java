@@ -17,5 +17,5 @@ public class PawnMoveFinder {
         this.moves = moves;
     }
 
-
+    
 }

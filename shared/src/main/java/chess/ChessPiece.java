@@ -55,13 +55,13 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>();
-//        if (type == PieceType.PAWN) {
-//            PawnMoveFinder pawnMoveFinder = new PawnMoveFinder(board, myPosition, pieceColor, moves);
-//            pawnMoveFinder.calculator();
-//        } else {
+        if (type == PieceType.PAWN) {
+            PawnMoveFinder pawnMoveFinder = new PawnMoveFinder(board, myPosition, pieceColor, moves);
+            pawnMoveFinder.calculateMoves();
+        } else {
             RegMoveFinder moveFinder = new RegMoveFinder(board, myPosition, pieceColor, moves, type);
             moveFinder.pieceLogic();
-//        }
+        }
         return moves;
     }
 

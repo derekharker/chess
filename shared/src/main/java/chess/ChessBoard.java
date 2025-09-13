@@ -44,11 +44,11 @@ public class ChessBoard {
     public void resetBoard() {
         clearBoard();
         addAllPawns();
+        addPiece(ChessPiece.PieceType.BISHOP, 2, 5);
         addPiece(ChessPiece.PieceType.KING, 4, 0);
         addPiece(ChessPiece.PieceType.QUEEN, 3, 0);
         addPiece(ChessPiece.PieceType.ROOK, 0, 7);
         addPiece(ChessPiece.PieceType.KNIGHT, 1, 6);
-        addPiece(ChessPiece.PieceType.BISHOP, 2, 5);
     }
 
     private void clearBoard() {
@@ -61,27 +61,34 @@ public class ChessBoard {
 
     private void addAllPawns() {
         for (int col = 0; col < 8; col++) {
+            board[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
             board[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-            board[6][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         }
     }
 
     private void addPiece(ChessPiece.PieceType type, int col1, int col2) {
         if (type == ChessPiece.PieceType.KING || type == ChessPiece.PieceType.QUEEN) {
-            board[7][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
-            board[0][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
         } else {
-            board[7][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
-            board[7][col2] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
-            board[0][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
-            board[0][col2] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[0][col2] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[7][col2] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
         }
     }
 
     @Override
     public String toString() {
-        return "ChessBoard{" +
-                "board=" + Arrays.toString(board) +
+        return "ChessBoard{"
+                + "\n" + Arrays.toString(board[0])
+                + "\n" + Arrays.toString(board[1])
+                + "\n" + Arrays.toString(board[2])
+                + "\n" + Arrays.toString(board[3])
+                + "\n" + Arrays.toString(board[4])
+                + "\n" + Arrays.toString(board[5])
+                + "\n" + Arrays.toString(board[6])
+                + "\n" + Arrays.toString(board[7]) +
                 '}';
     }
 

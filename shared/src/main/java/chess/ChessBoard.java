@@ -44,11 +44,11 @@ public class ChessBoard {
     public void resetBoard() {
         clearBoard();
         addAllPawns();
-        addPiece(ChessPiece.PieceType.BISHOP, 2, 5);
-        addPiece(ChessPiece.PieceType.KING, 4, 0);
-        addPiece(ChessPiece.PieceType.QUEEN, 3, 0);
-        addPiece(ChessPiece.PieceType.ROOK, 0, 7);
-        addPiece(ChessPiece.PieceType.KNIGHT, 1, 6);
+        addPieceBoard(ChessPiece.PieceType.BISHOP, 2, 5);
+        addPieceBoard(ChessPiece.PieceType.KING, 4, 0);
+        addPieceBoard(ChessPiece.PieceType.QUEEN, 3, 0);
+        addPieceBoard(ChessPiece.PieceType.ROOK, 0, 7);
+        addPieceBoard(ChessPiece.PieceType.KNIGHT, 1, 6);
     }
 
     private void clearBoard() {
@@ -66,7 +66,7 @@ public class ChessBoard {
         }
     }
 
-    private void addPiece(ChessPiece.PieceType type, int col1, int col2) {
+    private void addPieceBoard(ChessPiece.PieceType type, int col1, int col2) {
         if (type == ChessPiece.PieceType.KING || type == ChessPiece.PieceType.QUEEN) {
             board[0][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
             board[7][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);

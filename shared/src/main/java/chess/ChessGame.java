@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -53,7 +54,35 @@ public class ChessGame {
         Collection<ChessMove> validMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         ChessGame.TeamColor teamColor = board.getPiece(startPosition).getTeamColor();
 
+        Iterator<ChessMove> iterator = validMoves.iterator();
+        for (; iterator.hasNext(); ) {
+            ChessMove move = iterator.next();
+            try {
+                ChessBoard clone = (ChessBoard) this.board.clone();
+                performMove(move, clone); // implement
+                if (checkHelp(teamColor, clone)) {
+                    iterator.remove();
+                }
+            } catch(CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            } catch(InvalidMoveException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         return validMoves;
+    }
+
+    private void performMove(ChessMove move, ChessBoard board) {
+
+        ChessPiece.PieceType pieceType;
+        ChessGame.TeamColor teamColor = board.getPiece(move.getStartPosition()).getTeamColor();
+
+        if (move.getPromotionPiece() == null) {
+            pieceType = board.getPiece(move.getStartPosition()).getPieceType();
+        } else {
+            pieceType = move.getPromotionPiece();
+        }
     }
 
     /**

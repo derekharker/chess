@@ -32,14 +32,14 @@ public class RegMoveFinder {
                 moveDirSingle(-1,-1);
                 break;
             case QUEEN:
-                moveDirMultiple(1,1);
                 moveDirMultiple(1,0);
+                moveDirMultiple(1,1);
+                moveDirMultiple(1,-1);
+                moveDirMultiple(0,1);
                 moveDirMultiple(0,-1);
                 moveDirMultiple(-1,0);
-                moveDirMultiple(0,1);
                 moveDirMultiple(-1,1);
                 moveDirMultiple(-1,-1);
-                moveDirMultiple(1,-1);
                 break;
             case BISHOP:
                 moveDirMultiple(-1,-1);

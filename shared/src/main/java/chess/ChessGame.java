@@ -95,11 +95,14 @@ public class ChessGame {
                 if (curr != null && curr.getTeamColor() != teamColor) {
                     Collection<ChessMove> enemyMoves = curr.pieceMoves(board, tryP);
                     for (ChessMove enemyMove : enemyMoves) {
-                        if (enemyMove)
+                        if (enemyMove.getEndPosition().equals(kingP)) {
+                            return true;
+                        }
                     }
                 }
             }
         }
+        return false;
     }
 
     private ChessPosition getKingP(ChessGame.TeamColor teamColor, ChessBoard board) {
@@ -115,7 +118,7 @@ public class ChessGame {
         return null;
     }
 
-    private void performMove(ChessMove move, ChessBoard board) {
+    private void performMove(ChessMove move, ChessBoard board) throws InvalidMoveException {
 
         ChessPiece.PieceType pieceType;
         ChessGame.TeamColor teamColor = board.getPiece(move.getStartPosition()).getTeamColor();

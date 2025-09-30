@@ -209,7 +209,18 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return false;
+        if (getTeamTurn() != teamColor) {
+            return false;
+        }
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+        Collection<ChessMove> moves = findValidMoves(teamColor);
+        if (moves.size() > 0) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -246,4 +257,6 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+
 }

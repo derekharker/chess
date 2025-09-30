@@ -22,8 +22,8 @@ public class ChessGame {
     public ChessBoard copy() {
         ChessBoard out = new ChessBoard();
 
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
                 ChessPosition p = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(p);
                 if (piece != null) {
@@ -88,8 +88,8 @@ public class ChessGame {
 
     private boolean checkHelp(ChessGame.TeamColor teamColor, ChessBoard board) {
         ChessPosition kingP = getKingP(teamColor, board);
-        for (int row = 1; row < 8; row++) {
-            for (int col = 1; col < 8; col++) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
                 ChessPosition tryP = new ChessPosition(row, col);
                 ChessPiece curr = board.getPiece(tryP);
                 if (curr != null && curr.getTeamColor() != teamColor) {
@@ -180,7 +180,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return false;
+        return checkHelp(teamColor, this.board);
     }
 
     /**

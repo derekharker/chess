@@ -19,6 +19,21 @@ public class ChessGame {
         board.resetBoard();
     }
 
+    public ChessBoard copy() {
+        ChessBoard out = new ChessBoard();
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPosition p = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(p);
+                if (piece != null) {
+                    out.addPiece(p, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                }
+            }
+        }
+        return out;
+    }
+
     /**
      * @return Which team's turn it is
      */
@@ -57,20 +72,47 @@ public class ChessGame {
         Iterator<ChessMove> iterator = validMoves.iterator();
         for (; iterator.hasNext(); ) {
             ChessMove move = iterator.next();
+            ChessBoard clone = this.copy();
             try {
-                ChessBoard clone = new ChessBoard(this.board);
                 performMove(move, clone); // implement
-//                if (checkHelp(teamColor, clone)) {
-//                    iterator.remove();
-//                }
-            } catch(CloneNotSupportedException e) {
-                throw new RuntimeException(e);
+                if (checkHelp(teamColor, clone)) {
+                    iterator.remove();
+                }
             } catch(InvalidMoveException e) {
                 throw new RuntimeException(e);
             }
         }
 
         return validMoves;
+    }
+
+    private boolean checkHelp(ChessGame.TeamColor teamColor, ChessBoard board) {
+        ChessPosition kingP = getKingP(teamColor, board);
+        for (int row = 1; row < 8; row++) {
+            for (int col = 1; col < 8; col++) {
+                ChessPosition tryP = new ChessPosition(row, col);
+                ChessPiece curr = board.getPiece(tryP);
+                if (curr != null && curr.getTeamColor() != teamColor) {
+                    Collection<ChessMove> enemyMoves = curr.pieceMoves(board, tryP);
+                    for (ChessMove enemyMove : enemyMoves) {
+                        if (enemyMove)
+                    }
+                }
+            }
+        }
+    }
+
+    private ChessPosition getKingP(ChessGame.TeamColor teamColor, ChessBoard board) {
+        ChessPiece tempK = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition kingP = new ChessPosition(i, j);
+                if (board.getPiece(kingP) != null && board.getPiece(kingP).equals(tempK)) {
+                    return kingP;
+                }
+            }
+        }
+        return null;
     }
 
     private void performMove(ChessMove move, ChessBoard board) {

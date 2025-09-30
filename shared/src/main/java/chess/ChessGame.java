@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -190,7 +191,14 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return false;
+        if (isInCheck(teamColor)) {
+            Collection<ChessMove> allFriendly = findValidMoves(teamColor);
+            if (allFriendly.size() > 0) {
+                return false;
+            } else {
+                return true;
+            }
+        } else { return false;}
     }
 
     /**
@@ -211,6 +219,23 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
+    }
+
+    private Collection<ChessMove> findValidMoves(ChessGame.TeamColor teamColor) {
+        Collection<ChessMove> moves = new ArrayList<>();
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> tmp = validMoves(pos);
+                    for (ChessMove move : tmp) {
+                        moves.add(move);
+                    }
+                }
+            }
+        }
+        return moves;
     }
 
     /**

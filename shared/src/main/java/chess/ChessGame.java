@@ -58,7 +58,7 @@ public class ChessGame {
         for (; iterator.hasNext(); ) {
             ChessMove move = iterator.next();
             try {
-                ChessBoard clone = (ChessBoard) this.board.clone();
+                ChessBoard clone = new ChessBoard(this.board);
                 performMove(move, clone); // implement
 //                if (checkHelp(teamColor, clone)) {
 //                    iterator.remove();

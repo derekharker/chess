@@ -60,9 +60,9 @@ public class ChessGame {
             try {
                 ChessBoard clone = (ChessBoard) this.board.clone();
                 performMove(move, clone); // implement
-                if (checkHelp(teamColor, clone)) {
-                    iterator.remove();
-                }
+//                if (checkHelp(teamColor, clone)) {
+//                    iterator.remove();
+//                }
             } catch(CloneNotSupportedException e) {
                 throw new RuntimeException(e);
             } catch(InvalidMoveException e) {
@@ -83,6 +83,9 @@ public class ChessGame {
         } else {
             pieceType = move.getPromotionPiece();
         }
+
+        board.removePiece(move.getStartPosition());
+        board.addPiece(move.getEndPosition(), new ChessPiece(teamColor, pieceType));
     }
 
     /**
@@ -92,7 +95,37 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (!moveChecks(move)) {return;}
+        performMove(move, board);
+        try {
+            endCurrentTurn();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private boolean moveChecks(ChessMove move) throws InvalidMoveException {
+        if (board.getPiece(move.getStartPosition()) == null) {
+            throw new InvalidMoveException("There's no piece there.");
+        }
+        ChessGame.TeamColor teamColor = board.getPiece(move.getStartPosition()).getTeamColor();
+        if (getTeamTurn() != teamColor) {
+            throw new InvalidMoveException("Not your turn!");
+        }
+        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+        if (!validMoves.contains(move)) {
+            throw new InvalidMoveException("Move not valid.");
+        }
+
+        return true;
+    }
+
+    private void endCurrentTurn() throws CloneNotSupportedException {
+        if (getTeamTurn() == ChessGame.TeamColor.WHITE) {
+            setTeamTurn(ChessGame.TeamColor.BLACK);
+        } else {
+            setTeamTurn(ChessGame.TeamColor.WHITE);
+        }
     }
 
     /**

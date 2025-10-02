@@ -60,13 +60,7 @@ public class ChessGame {
         BLACK
     }
 
-    /**
-     * Gets a valid moves for a piece at the given location
-     *
-     * @param startPosition the piece to get valid moves for
-     * @return Set of valid moves for requested piece, or null if no piece at
-     * startPosition
-     */
+
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         Collection<ChessMove> validMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         ChessGame.TeamColor teamColor = board.getPiece(startPosition).getTeamColor();
@@ -135,12 +129,6 @@ public class ChessGame {
         board.addPiece(move.getEndPosition(), new ChessPiece(teamColor, pieceType));
     }
 
-    /**
-     * Makes a move in a chess game
-     *
-     * @param move chess move to perform
-     * @throws InvalidMoveException if move is invalid
-     */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         if (!moveChecks(move)) {return;}
         performMove(move, board);
@@ -155,6 +143,7 @@ public class ChessGame {
         if (board.getPiece(move.getStartPosition()) == null) {
             throw new InvalidMoveException("There's no piece there.");
         }
+        //Team Color is only other check
         ChessGame.TeamColor teamColor = board.getPiece(move.getStartPosition()).getTeamColor();
         if (getTeamTurn() != teamColor) {
             throw new InvalidMoveException("Not your turn!");
@@ -235,6 +224,7 @@ public class ChessGame {
 
     private Collection<ChessMove> findValidMoves(ChessGame.TeamColor teamColor) {
         Collection<ChessMove> moves = new ArrayList<>();
+        //Temporary positions and pieces to try and find all valid moves
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);

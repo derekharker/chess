@@ -22,6 +22,31 @@ public class MemoryAuth implements AuthDAO {
         return newAuth;
     }
 
+    public void clearAuths() {
+        authList.clear();
+    }
+
+    @Override
+    public String getUsernameFromAuth(String authToken) {
+        for (AuthData authData : authList) {
+            if (authData.authToken().equals(authToken)){
+                return authData.username();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteAuth(String authToken) {
+        AuthData toRemove = null;
+        for (AuthData auth : authList) {
+            if (auth.authToken().equals(authToken)) {
+                toRemove = auth;
+            }
+        }
+        authList.remove(toRemove);
+    }
+
     @Override
     public boolean isVerifiedAuth(String authToken) {
         for (AuthData auth: authList) {
@@ -30,5 +55,6 @@ public class MemoryAuth implements AuthDAO {
                 return true;
             }
         }
+        return false;
     }
 }

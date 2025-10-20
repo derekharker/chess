@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import chess.ChessGame;
+import response.JoinGameResponse;
+import service.ErrorMessages;
 
 public class MemoryGame implements GameDAO {
     private Collection<GameData> gameList = new ArrayList<>();

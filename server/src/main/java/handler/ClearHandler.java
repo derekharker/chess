@@ -19,7 +19,7 @@ public class ClearHandler {
     }
 
     public void handle(Context ctx) {
-        SystemService clrService = new SystemService(userDAO, authDAO, gameDAO);
+        SystemService clrService = new SystemService(gameDAO, authDAO, userDAO);
         ClearResponse myResponse = clrService.clearApplication();
 
         ctx.status(200);

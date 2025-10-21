@@ -1,5 +1,5 @@
 package model;
 
-//import here?
+import java.util.Objects;
 
-public record AuthData(String username, String userToken){}
+public record AuthData(String username, String authToken){}

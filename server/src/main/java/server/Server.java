@@ -1,37 +1,40 @@
 package server;
 
 import handler.*;
-import spark.*;
+import io.javalin.Javalin;
 import dataaccess.memory.MemoryGame;
 import dataaccess.memory.MemoryAuth;
 import dataaccess.memory.MemoryUser;
 
 public class Server {
 
+    private Javalin app;
+
     public int run(int desiredPort) {
-        Spark.port(desiredPort);
-        Spark.staticFiles.location("web");
 
         MemoryUser userDAO = new MemoryUser();
         MemoryAuth authDAO = new MemoryAuth();
         MemoryGame gameDAO = new MemoryGame();
 
-        //Register endpoints
-        Spark.delete("/db", new clearHandler(userDAO, authDAO, gameDAO));
-        Spark.post("/user", new RegisterHandler(userDAO, authDAO));
-        Spark.delete("/session", new LogoutHandler(userDAO, authDAO));
-        Spark.post("/session", new LoginHandler(userDAO, authDAO));
-        Spark.post("/game", new CreateGameHandler(authDAO, gameDAO));
-        Spark.put("/game", new JoinGameHandler(authDAO, gameDAO));
-        Spark.get("game", new ListGamesHandler(authDAO, gameDAO));
+        app = Javalin.create(config -> {
+            config.staticFiles.add("/web");
+        }).start(desiredPort);
 
-        Spark.awaitInitialization();
-        return Spark.port();
+        // Register endpoints
+        app.delete("/db", ctx -> new clearHandler(userDAO, authDAO, gameDAO).handle(ctx));
+        app.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
+        app.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));
+        app.post("/session", ctx -> new LoginHandler(userDAO, authDAO).handle(ctx));
+        app.post("/game", ctx -> new CreateGameHandler(authDAO, gameDAO).handle(ctx));
+        app.put("/game", ctx -> new JoinGameHandler(authDAO, gameDAO).handle(ctx));
+        app.get("/game", ctx -> new ListGamesHandler(authDAO, gameDAO).handle(ctx));
+
+        return desiredPort;
     }
 
     public void stop() {
-        Spark.stop();
-        Spark.awaitStop();
-
+        if (app != null) {
+            app.stop();
+        }
     }
 }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import chess.ChessGame;
+import model.GameData;
 import response.JoinGameResponse;
 import service.ErrorMessages;
 

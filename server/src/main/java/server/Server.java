@@ -21,7 +21,7 @@ public class Server {
         }).start(desiredPort);
 
         // Register endpoints
-        app.delete("/db", ctx -> new clearHandler(userDAO, authDAO, gameDAO).handle(ctx));
+        app.delete("/db", ctx -> new ClearHandler(userDAO, authDAO, gameDAO).handle(ctx));
         app.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
         app.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));
         app.post("/session", ctx -> new LoginHandler(userDAO, authDAO).handle(ctx));

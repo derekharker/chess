@@ -21,6 +21,9 @@ public class GameService {
 
     public CreateGameResponse createGame(CreateGameRequest createGameRequest) {
         System.out.println("Auth token is: " + createGameRequest.authToken());
+        if (createGameRequest.gameName() == null) {
+            return new CreateGameResponse(null, ErrorMessages.BADREQUEST);
+        }
 
         if (!authDAO.isVerifiedAuth(createGameRequest.authToken())) {
             return new CreateGameResponse(null, ErrorMessages.UNAUTHORIZED);
@@ -38,7 +41,7 @@ public class GameService {
             return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
         return gameDAO.updateUserInGame(joinGameRequest.gameID(),
-                    authDAO.getUsernameFromAuth(joinGameRequest.authToken()), joinGameRequest.teamColor());
+                    authDAO.getUsernameFromAuth(joinGameRequest.authToken()), joinGameRequest.playerColor());
     }
 
     public ListGamesResponse listGames(String authT) {

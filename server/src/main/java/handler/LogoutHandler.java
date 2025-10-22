@@ -23,10 +23,10 @@ public class LogoutHandler {
 
         String authToken = ctx.header("Authorization");
 
-        UserService logoutService = new UserService(authDAO, userDAO);
+        UserService logoutService = new UserService(userDAO, authDAO);
         LogoutResponse sum = logoutService.logout(authToken);
 
-        if (sum.msg() == null) {
+        if (sum.message() == null) {
             ctx.status(200);
         } else {
             ctx.status(401);

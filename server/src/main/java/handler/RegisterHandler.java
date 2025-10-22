@@ -22,15 +22,15 @@ public class RegisterHandler {
     public void handle(Context ctx) {
         RegisterRequest registerRequest = (RegisterRequest) Translation.fromJsonToObject(ctx, RegisterRequest.class);
 
-        UserService registerService = new UserService(authDAO, userDAO);
+        UserService registerService = new UserService(userDAO, authDAO);
         RegisterResponse result = registerService.register(registerRequest);
 
-        if (result.msg() == null) {
+        if (result.message() == null) {
             ctx.status(200);
         } else {
-            if (result.msg().equals(ErrorMessages.ALREADYTAKEN)) {
+            if (result.message().equals(ErrorMessages.ALREADYTAKEN)) {
                 ctx.status(403);
-            } else if (result.msg().equals(ErrorMessages.BADREQUEST)) {
+            } else if (result.message().equals(ErrorMessages.BADREQUEST)) {
                 ctx.status(400);
             }
         }

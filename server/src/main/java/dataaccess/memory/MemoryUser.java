@@ -15,7 +15,7 @@ public class MemoryUser implements UserDAO {
     }
 
     @Override
-    public boolean isVerifiedUser(String password, String username) {
+    public boolean isVerifiedUser(String username, String password) {
         for (UserData currUser : userDataList) {
             if (currUser.username().equals(username) && currUser.password().equals(password)) {
                 return true;

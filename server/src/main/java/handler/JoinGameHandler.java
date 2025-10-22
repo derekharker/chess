@@ -22,18 +22,18 @@ public class JoinGameHandler {
     public void handle(Context ctx) {
         String authToken = ctx.header("Authorization");
         JoinGameRequest joinHandle = (JoinGameRequest) Translation.fromJsonToObject(ctx, JoinGameRequest.class);
-        JoinGameRequest joinGameRequest = new JoinGameRequest(joinHandle.teamColor(), joinHandle.gameID(), authToken);
+        JoinGameRequest joinGameRequest = new JoinGameRequest(joinHandle.playerColor(), joinHandle.gameID(), authToken);
 
         GameService gameService = new GameService(authDAO, gameDAO);
         JoinGameResponse joinGameResponse = gameService.joinGame(joinGameRequest);
 
-        if (joinGameResponse.msg() == null) {
+        if (joinGameResponse.message() == null) {
             ctx.status(200);
-        } else if (joinGameResponse.msg().equals(ErrorMessages.UNAUTHORIZED)) {
+        } else if (joinGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
             ctx.status(401);
-        } else if (joinGameResponse.msg().equals(ErrorMessages.ALREADYTAKEN)) {
+        } else if (joinGameResponse.message().equals(ErrorMessages.ALREADYTAKEN)) {
             ctx.status(403);
-        } else if (joinGameResponse.msg().equals(ErrorMessages.BADREQUEST)) {
+        } else if (joinGameResponse.message().equals(ErrorMessages.BADREQUEST)) {
             ctx.status(400);
         } else {
             ctx.status(500);

@@ -14,12 +14,16 @@ public class UserService {
     private final AuthDAO authDAO;
     private final UserDAO userDAO;
 
-    public UserService(AuthDAO authDAO, UserDAO userDAO) {
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
         this.authDAO = authDAO;
         this.userDAO = userDAO;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
+        if (loginRequest.username() == null || loginRequest.password() == null) {
+            return new LoginResponse(null, null, ErrorMessages.BADREQUEST);
+        }
+
         if (!userDAO.isVerifiedUser(loginRequest.username(), loginRequest.password())) {
             return new LoginResponse(null, null, ErrorMessages.UNAUTHORIZED);
         }
@@ -27,8 +31,7 @@ public class UserService {
     }
 
     public RegisterResponse register(RegisterRequest regRequest) {
-        if (regRequest.username() == null || regRequest.password() == null ||
-        regRequest.email() == null) {
+        if (regRequest.username() == null || regRequest.password() == null || regRequest.email() == null) {
             return new RegisterResponse(null, null, ErrorMessages.BADREQUEST);
         }
         if (userDAO.getUser(regRequest.username()) != null) {

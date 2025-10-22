@@ -22,9 +22,9 @@ public class ListGamesHandler {
         GameService listGames = new GameService(authDAO, gameDAO);
         ListGamesResponse listGamesResponse = listGames.listGames(authToken);
 
-        if (listGamesResponse.msg() == null) {
+        if (listGamesResponse.message() == null) {
             ctx.status(200);
-        } else if (listGamesResponse.msg().equals(ErrorMessages.UNAUTHORIZED)) {
+        } else if (listGamesResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
             ctx.status(401);
         }
 

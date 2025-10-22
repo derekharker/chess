@@ -30,10 +30,16 @@ public class CreateGameHandler {
         GameService gameService = new GameService(authDAO, gameDAO);
         CreateGameResponse createGameResponse = gameService.createGame(createGameRequest);
 
-        if (createGameResponse.msg() == null) {
-            ctx.status(200);
+        if (createGameResponse.message() != null) {
+            // Switch case same as Login Handler
+            switch (createGameResponse.message()) {
+                case "Error: bad request" -> ctx.status(400);
+                case "Error: unauthorized" -> ctx.status(401);
+
+                default -> ctx.status(500);
+            }
         } else {
-            ctx.status(401);
+            ctx.status(200);
         }
 
         ctx.json(createGameResponse);

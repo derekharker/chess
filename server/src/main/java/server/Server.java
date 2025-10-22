@@ -5,13 +5,20 @@ import io.javalin.*;
 import dataaccess.memory.MemoryGame;
 import dataaccess.memory.MemoryAuth;
 import dataaccess.memory.MemoryUser;
+import io.javalin.json.JavalinGson;
 
 public class Server {
 
     private Javalin javalin;
 
     public Server() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin = Javalin.create(
+                config -> {
+                    config.staticFiles.add("web");
+
+                    config.jsonMapper(new JavalinGson());
+                }
+        );
 
         MemoryUser userDAO = new MemoryUser();
         MemoryAuth authDAO = new MemoryAuth();
@@ -29,8 +36,9 @@ public class Server {
 
     public int run(int desiredPort) {
         javalin.start(desiredPort);
-
-        return desiredPort;
+        int actPort = javalin.port();
+        System.out.println("Server running on port " + actPort);
+        return actPort;
     }
 
     public void stop() {

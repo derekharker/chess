@@ -4,14 +4,10 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 
 public class Translation {
-    private static final Gson gson = new Gson();
-
-    public static String fromObjectToJson(Object result) {
-        return gson.toJson(result);
-    }
+    private static final Gson GSON = new Gson();
 
     public static <T> T fromJsonToObject(Context ctx, Class<T> classOfT) {
         System.out.println("Made it inside new class");
-        return gson.fromJson(ctx.body(), classOfT);
+        return GSON.fromJson(ctx.body(), classOfT);
     }
 }

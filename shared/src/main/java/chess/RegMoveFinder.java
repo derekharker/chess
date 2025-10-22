@@ -73,7 +73,9 @@ public class RegMoveFinder {
         tempRow += (rowDirection);
         tempCol += (colDirection);
 
-        if (! inbounds(tempRow, tempCol)) return;
+        if (! inbounds(tempRow, tempCol)) {
+            return;
+        }
 
         ChessPosition tempPosition = new ChessPosition(tempRow, tempCol);
 

@@ -84,16 +84,18 @@ public class ChessGame {
 
     private boolean checkHelp(ChessGame.TeamColor teamColor, ChessBoard board) {
         ChessPosition kingP = getKingP(teamColor, board);
+
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition tryP = new ChessPosition(row, col);
                 ChessPiece curr = board.getPiece(tryP);
-                if (curr != null && curr.getTeamColor() != teamColor) {
-                    Collection<ChessMove> enemyMoves = curr.pieceMoves(board, tryP);
-                    for (ChessMove enemyMove : enemyMoves) {
-                        if (enemyMove.getEndPosition().equals(kingP)) {
-                            return true;
-                        }
+                if (curr == null || curr.getTeamColor() == teamColor) {
+                    continue;
+                }
+
+                for (ChessMove enemyMove : curr.pieceMoves(board, tryP)) {
+                    if (enemyMove.getEndPosition().equals(kingP)) {
+                        return true;
                     }
                 }
             }

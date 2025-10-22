@@ -77,19 +77,20 @@ public class PawnMoveFinder {
         ChessPiece newPiece = board.getPiece(newPos);
 
         if (colMove == 0) {
-            if (newPiece == null) {
-                if (promotion) {
-                    promotePawn(newPos);
-                } else {
-                    ChessMove newMove = new ChessMove(pos, newPos, null);
-                    moves.add(newMove);
-                    if (doubleMove) {
-                        ChessPosition doublePos = new ChessPosition(newRowPos + rowMove, newColPos);
-                        ChessPiece testPiece = board.getPiece(doublePos);
-                        if (testPiece == null) {
-                            ChessMove newDoubleMove = new ChessMove(pos, doublePos, null);
-                            moves.add(newDoubleMove);
-                        }
+            if (newPiece != null) {
+                return;
+            }
+            if (promotion) {
+                promotePawn(newPos);
+            } else {
+                ChessMove newMove = new ChessMove(pos, newPos, null);
+                moves.add(newMove);
+                if (doubleMove) {
+                    ChessPosition doublePos = new ChessPosition(newRowPos + rowMove, newColPos);
+                    ChessPiece testPiece = board.getPiece(doublePos);
+                    if (testPiece == null) {
+                        ChessMove newDoubleMove = new ChessMove(pos, doublePos, null);
+                        moves.add(newDoubleMove);
                     }
                 }
             }

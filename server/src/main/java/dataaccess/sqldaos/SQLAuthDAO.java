@@ -65,5 +65,10 @@ public class SQLAuthDAO implements AuthDAO {
     }
 
     @Override
-    public String
+    public String getUsernameFromAuth(String authToken) {
+        String st = "SELECT username FROM auth WHERE authToken = ?";
+        try (var ps = DatabaseManager.getConnection().prepareStatement(st)) {
+
+        }
+    }
 }

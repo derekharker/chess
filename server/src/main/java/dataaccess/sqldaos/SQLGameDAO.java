@@ -3,6 +3,8 @@ package dataaccess.sqldaos;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import model.GameData;
+import response.JoinGameResponse;
+import service.ErrorMessages;
 import translator.Translation;
 
 import java.sql.SQLException;
@@ -61,5 +63,21 @@ public class SQLGameDAO {
     }
 
     @Override
+    public JoinGameResponse updateUserInGame(int gameID, String username, ChessGame.TeamColor teamColor) {
+        if (!(teamColor == ChessGame.TeamColor.WHITE || teamColor == ChessGame.TeamColor.BLACK) {
+            return new JoinGameResponse(ErrorMessages.BADREQUEST);
+        }
+        if (!isEmpty(gameID, teamColor)) {
+            return new JoinGameResponse(ErrorMessages.ALREADYTAKEN);
+        }
 
+        String st;
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            st = "UPDATE game SET white_username = ? WHERE game_id = ?";
+        } else {
+            st = "UPDATE game SET black_username = ? WHERE game_id = ?";
+        }
+
+
+    }
 }

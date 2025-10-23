@@ -10,4 +10,8 @@ public class Translation {
         System.out.println("Made it inside new class");
         return GSON.fromJson(ctx.body(), classOfT);
     }
+
+    public static <T> T fromJsontoObjectNotRequest(String str, Class<T> type) {
+        return GSON.fromJson(str, type);
+    }
 }

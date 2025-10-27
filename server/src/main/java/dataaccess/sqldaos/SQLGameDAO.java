@@ -99,6 +99,27 @@ public class SQLGameDAO {
             st = "SELECT black_username FROM game WHERE game_id = ?";
         }
 
+        try (var conn = DatabaseManager.getConnection()) {
+            var ps = conn.prepareStatement(st); {
+                ps.setInt(1, gameID);
 
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String username = rs.getString(userType);
+                        boolean result = username == null || username.isEmpty();
+                        return result;
+                    } else {
+                        System.out.println("Game does not exist.");
+                        return false;
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            System.out.println("SQL Error in isEmpty: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
+
+
 }

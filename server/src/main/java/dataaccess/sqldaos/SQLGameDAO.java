@@ -78,6 +78,27 @@ public class SQLGameDAO {
             st = "UPDATE game SET black_username = ? WHERE game_id = ?";
         }
 
+        try {
+            executeUpdate(st, username, gameID);
+        } catch (DataAccessException e) {
+            System.out.println("Error updating user in game: " + e.getMessage());
+            return new JoinGameResponse(ErrorMessages.SQLERROR);
+        }
+
+        return new JoinGameResponse(null);
+    }
+
+    private boolean isEmpty(int gameID, ChessGame.TeamColor teamColor) {
+        String userType;
+        String st;
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            userType = "white_username";
+            st = "SELECT white_username FROM game WHERE game_id = ?";
+        } else {
+            userType = "black_username";
+            st = "SELECT black_username FROM game WHERE game_id = ?";
+        }
+
 
     }
 }

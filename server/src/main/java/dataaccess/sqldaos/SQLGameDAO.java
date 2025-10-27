@@ -2,6 +2,8 @@ package dataaccess.sqldaos;
 
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
 import model.GameData;
 import response.JoinGameResponse;
 import service.ErrorMessages;
@@ -37,9 +39,9 @@ public class SQLGameDAO {
         Collection<GameData> games = new ArrayList<>();
         String st = "SELECT game_id, white_username, black_username, game_name, game_info FROM game";
 
-        try (var connection = DatabaseManager.getConnection()) {
+        try (var connection = DatabaseManager.getConnection();
             var ps = connection.prepareStatement(st);
-            var rs = ps.executeQuery(); {
+            var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int gameID = rs.getInt("game_id");
                     String whiteUser = rs.getString("white_username");
@@ -52,7 +54,6 @@ public class SQLGameDAO {
                     GameData gameData = new GameData(gameID, whiteUser, blackUser, gameName, game);
                     games.add(gameData);
                 }
-            }
 
         } catch (SQLException | DataAccessException ex) {
             System.out.println("Error listing out games: " + ex.getMessage());
@@ -99,8 +100,9 @@ public class SQLGameDAO {
             st = "SELECT black_username FROM game WHERE game_id = ?";
         }
 
-        try (var conn = DatabaseManager.getConnection()) {
-            var ps = conn.prepareStatement(st); {
+        try (var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(st)) {
+
                 ps.setInt(1, gameID);
 
                 try (var rs = ps.executeQuery()) {
@@ -113,7 +115,6 @@ public class SQLGameDAO {
                         return false;
                     }
                 }
-            }
         } catch (SQLException | DataAccessException e) {
             System.out.println("SQL Error in isEmpty: " + e.getMessage());
             e.printStackTrace();
@@ -121,5 +122,66 @@ public class SQLGameDAO {
         }
     }
 
+    @Override
+    public boolean isVerifiedGame(int gameID) {
+        String st = "SELECT COUNT(*) FROM game WHERE game_id = ?";
 
+        try (var conn = DatabaseManager.getConnection();
+            var ps = conn.prepareStatement(st)) {
+
+            ps.setString(1, String.valueOf(gameID));
+
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int cnt = rs.getInt(1);
+                    return cnt > 0;
+                }
+            }
+
+        } catch (SQLException | DataAccessException e) {
+            System.out.println("Game not verified. Denied: " + e.getMessage());
+            return false;
+        }
+
+        return false;
+    }
+
+    @Override
+    public int createGame(String gameName) {
+        var st = "INSERT INTO game (game_id, game_name, game_info) VALUES (?, ?, ?)";
+        int gameID = createGameID();
+        String gameString = (String) Translation.fromJsonToObject(new ChessGame());
+
+        try {
+            executeUpdate(st, gameID, gameName, gameString);
+            return gameID;
+        } catch (DataAccessException ex) {
+            System.out.println("Error in createGame: " + ex.getMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    public int createGameID(){
+        return initialGameDAO++;
+    }
+
+    @Override
+    public void clearApplication(AuthDAO authDAO, UserDAO userDAO) {
+        clearGames();
+        authDAO.clearAuths();
+        userDAO.clearUsers();
+    }
+
+    private boolean updateGame(int gameID, ChessGame game) {
+        String st = "UPDATE game SET game_info = ? WHERE game_id = ?";
+        String gameString = (String) Translation.fromObjectToJson(game);
+        try {
+            executeUpdate(st, gameID, gameString);
+            return true;
+        } catch (DataAccessException e) {
+            System.out.println("Error creating a game: " + e.getMessage());
+            return false;
+        }
+    }
 }

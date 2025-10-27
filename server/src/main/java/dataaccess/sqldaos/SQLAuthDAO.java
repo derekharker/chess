@@ -29,8 +29,8 @@ public class SQLAuthDAO implements AuthDAO {
     public boolean isVerifiedAuth(String authToken) {
         String st = "SELECT COUNT(*) FROM auth WHERE authToken = ?";
 
-        try (var connection = DatabaseManager.getConnection()) {
-            var ps = connection.prepareStatement(st);
+        try (var connection = DatabaseManager.getConnection();
+            var ps = connection.prepareStatement(st)) {
             ps.setString(1, authToken);
 
             try (var rs = ps.executeQuery()) {
@@ -79,6 +79,7 @@ public class SQLAuthDAO implements AuthDAO {
     public String getUsernameFromAuth(String authToken) {
         String st = "SELECT username FROM auth WHERE authToken = ?";
         try (var ps = DatabaseManager.getConnection().prepareStatement(st)) {
+
             ps.setString(1, authToken);
             try (var rs = ps.executeQuery()) {
                 if (rs.next()) {

@@ -19,4 +19,11 @@ public class SQLUserDAO {
             System.out.println("Error in clearUsers(): " + e.getMessage());
         }
     }
+
+    @Override
+    public boolean userExists(String username) {
+        String st = "SELECT COUNT(*) FROM user WHERE username = ?";
+
+
+    }
 }

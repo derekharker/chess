@@ -75,7 +75,19 @@ public class SQLUserDAO {
              var ps = conn.prepareStatement(st)) {
             ps.setString(1, username);
 
-
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String hashPassword = rs.getString("password");
+                    return BCrypt.checkpw(password, hashPassword);
+                } else {
+                    return false;
+                }
+            }
+        } catch (DataAccessException | SQLException ex) {
+            System.out.println("Error in verifying user: " + ex.getMessage());
+            ex.printStackTrace();
+            return false;
         }
     }
+
 }

@@ -20,15 +20,13 @@ public class GameService {
     }
 
     public CreateGameResponse createGame(CreateGameRequest createGameRequest) {
-        System.out.println("Auth token is: " + createGameRequest.authToken());
-        if (createGameRequest.gameName() == null) {
-            return new CreateGameResponse(null, ErrorMessages.BADREQUEST);
-        }
-
         if (!authDAO.isVerifiedAuth(createGameRequest.authToken())) {
             return new CreateGameResponse(null, ErrorMessages.UNAUTHORIZED);
         }
         int gamID = gameDAO.createGame(createGameRequest.gameName());
+        if (gamID == 0) {
+            return new CreateGameResponse(null, ErrorMessages.SQLERROR);
+        }
         return new CreateGameResponse(gamID, null);
     }
 

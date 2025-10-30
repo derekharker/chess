@@ -37,8 +37,15 @@ public class UserService {
         if (userDAO.userExists(regRequest.username())) {
             return new RegisterResponse(null, null, ErrorMessages.ALREADYTAKEN);
         }
-        userDAO.createUser(new UserData(regRequest.username(), regRequest.password(), regRequest.email()));
+        UserData testUser = userDAO.createUser(new UserData(regRequest.username(), regRequest.password(), regRequest.email()));
+        if (testUser.username() == null) {
+            return new RegisterResponse(null, null, ErrorMessages.SQLERROR);
+        }
         String authToken = authDAO.createAuth(regRequest.username());
+
+        if (authToken == null) {
+            return new RegisterResponse(null, null, ErrorMessages.SQLERROR);
+        }
 
         return new RegisterResponse(regRequest.username(), authToken, null);
     }

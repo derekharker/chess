@@ -23,7 +23,7 @@ public class SystemService {
             return new ClearResponse("Clear succeeded");
         } catch (Exception e) {
             System.err.println("Error caught in clearApplication");
-            throw new RuntimeException("Database connection failed", e);
+            throw new RuntimeException("Error: Database connection failed", e);
         }
     }
 

@@ -5,6 +5,7 @@ import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import io.javalin.http.Context;
 import response.ClearResponse;
+import service.ErrorMessages;
 import service.SystemService;
 
 import java.sql.SQLException;
@@ -27,9 +28,9 @@ public class ClearHandler {
             ctx.status(200);
             ctx.json(response);
         } catch (Exception e) {
-            System.err.println("ClearHandler caught error: " + e.getMessage());
+            System.out.println("ClearHandler caught error: " + e.getMessage());
             ctx.status(500);
-            ctx.json(new ClearResponse("Database connection Error"));
+            ctx.json(new ClearResponse(ErrorMessages.SQLERROR));
         }
     }
 }

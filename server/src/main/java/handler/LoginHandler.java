@@ -23,6 +23,12 @@ public class LoginHandler {
     public void handle(Context ctx) {
         LoginRequest loginRequest = (LoginRequest) Translation.fromJsonToObject(ctx, LoginRequest.class);
 
+        if (loginRequest == null || loginRequest.username() == null || loginRequest.password() == null) {
+            ctx.status(400);
+            ctx.json(new LoginResponse(null, null, "Error: Invalid request"));
+            return;
+        }
+
         UserService loginService = new UserService(userDAO, authDAO);
         try {
             LoginResponse response = loginService.login(loginRequest);
@@ -37,9 +43,8 @@ public class LoginHandler {
             System.out.println("Stays in here");
 
         } catch (Exception e) {
-            System.err.println("Database error during login: " + e.getMessage());
             ctx.status(500);
-            ctx.json(new LoginResponse(null, null, ErrorMessages.SQLERROR));
+            ctx.json(new LoginResponse(null, null, "Error"));
         }
     }
 

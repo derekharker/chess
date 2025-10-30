@@ -18,16 +18,25 @@ public class ListGamesHandler {
     }
 
     public void handle(Context ctx) {
-        String authToken = ctx.header("Authorization");
-        GameService listGames = new GameService(authDAO, gameDAO);
-        ListGamesResponse listGamesResponse = listGames.listGames(authToken);
+        try {
+            String authToken = ctx.header("Authorization");
+            GameService listGames = new GameService(authDAO, gameDAO);
+            ListGamesResponse listGamesResponse = listGames.listGames(authToken);
 
-        if (listGamesResponse.message() == null) {
-            ctx.status(200);
-        } else if (listGamesResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
-            ctx.status(401);
+            if (listGamesResponse.message() == null) {
+                ctx.status(200);
+            } else if (listGamesResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
+                ctx.status(401);
+            } else if (listGamesResponse.message().equals(ErrorMessages.SQLERROR)) {
+                ctx.status(500);
+            }
+
+            ctx.json(listGamesResponse);
+        } catch (Exception e) {
+            System.err.println("Database error during listGames: " + e.getMessage());
+            ctx.status(500);
+            ctx.json(new ListGamesResponse(null, "Error: Database connection failed"));
         }
-
-        ctx.json(listGamesResponse);
     }
+
 }

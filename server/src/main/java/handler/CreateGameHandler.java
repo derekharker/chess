@@ -23,26 +23,34 @@ public class CreateGameHandler {
 
     public void handle(Context ctx) {
         System.out.println("Made it to the handler");
-
         String authToken = ctx.header("Authorization");
         System.out.println("Auth token entered into createGame success: " + authToken);
 
-        // Parse body
-        CreateGameRequest gameName = (CreateGameRequest)
-                Translation.fromJsonToObject(ctx, CreateGameRequest.class);
+        try {
+            CreateGameRequest body = (CreateGameRequest) Translation.fromJsonToObject(ctx, CreateGameRequest.class);
+            if (body == null || body.gameName() == null) {
+                ctx.status(400);
+                ctx.json(new CreateGameResponse(null,"Error: Invalid request"));
+                return;
+            }
 
-        CreateGameRequest createGameRequest = new CreateGameRequest(gameName.gameName(), authToken);
-        GameService gameService = new GameService(authDAO, gameDAO);
-        CreateGameResponse createGameResponse = gameService.createGame(createGameRequest);
+            CreateGameRequest createGameRequest = new CreateGameRequest(body.gameName(), authToken);
+            GameService gameService = new GameService(authDAO, gameDAO);
+            CreateGameResponse createGameResponse = gameService.createGame(createGameRequest);
 
-        if (createGameResponse.message() == null) {
-            ctx.status(200);
-        } else if (createGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
-            ctx.status(401);
-        } else if (createGameResponse.message().equals(ErrorMessages.SQLERROR)) {
+            if (createGameResponse.message() == null) {
+                ctx.status(200);
+            } else if (createGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
+                ctx.status(401);
+            } else if (createGameResponse.message().equals(ErrorMessages.SQLERROR)) {
+                ctx.status(500);
+            }
+
+            ctx.json(createGameResponse);
+        } catch (Exception e) {
+            System.err.println("Database error during createGame: " + e.getMessage());
             ctx.status(500);
+            ctx.json(new CreateGameResponse(null, "Error: Database connection failed"));
         }
-
-        ctx.json(createGameResponse);
     }
 }

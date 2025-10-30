@@ -36,7 +36,7 @@ public class LogoutHandler {
 
             ctx.json(sum);
         } catch (Exception e) {
-            System.err.println("Database error during logout: " + e.getMessage());
+            System.out.println("Database error during logout: " + e.getMessage());
             ctx.status(500);
             ctx.json(new LogoutResponse(ErrorMessages.SQLERROR));
         }

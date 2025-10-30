@@ -40,6 +40,7 @@ public class SQLAuthDAO implements AuthDAO {
                     return cnt > 0;
                 }
             }
+            return false;
         } catch (SQLException ex) {
             System.out.println("Access Denied: " + ex.getMessage());
             ex.printStackTrace();
@@ -48,7 +49,6 @@ public class SQLAuthDAO implements AuthDAO {
             System.out.println("Data access error: " + ex.getMessage());
             throw new RuntimeException("Error: Database connection failed", ex);
         }
-        return false;
     }
 
     @Override

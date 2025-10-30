@@ -20,25 +20,30 @@ public class RegisterHandler {
     }
 
     public void handle(Context ctx) {
-        RegisterRequest registerRequest = (RegisterRequest) Translation.fromJsonToObject(ctx, RegisterRequest.class);
+        try {
+            RegisterRequest registerRequest = (RegisterRequest) Translation.fromJsonToObject(ctx, RegisterRequest.class);
 
-        UserService registerService = new UserService(userDAO, authDAO);
-        RegisterResponse result = registerService.register(registerRequest);
+            UserService registerService = new UserService(userDAO, authDAO);
+            RegisterResponse result = registerService.register(registerRequest);
 
-        if (result.message() == null) {
-            ctx.status(200);
-        } else {
-            if (result.message().equals(ErrorMessages.ALREADYTAKEN)) {
-                ctx.status(403);
-            } else if (result.message().equals(ErrorMessages.BADREQUEST)) {
-                ctx.status(400);
-            } else if (result.message().equals(ErrorMessages.SQLERROR)) {
-                ctx.status(500);
+            if (result.message() == null) {
+                ctx.status(200);
+            } else {
+                if (result.message().equals(ErrorMessages.ALREADYTAKEN)) {
+                    ctx.status(403);
+                } else if (result.message().equals(ErrorMessages.BADREQUEST)) {
+                    ctx.status(400);
+                } else if (result.message().equals(ErrorMessages.SQLERROR)) {
+                    ctx.status(500);
+                }
             }
+
+            ctx.json(result);
+        } catch (Exception e) {
+            System.err.println("RegisterHandler caught error: " + e.getMessage());
+            ctx.status(500);
+            ctx.json(new RegisterResponse(null, null, "Error: Database connection failed"));
         }
-
-        System.out.println("If you're here Imma die");
-
-        ctx.json(result);
     }
+
 }

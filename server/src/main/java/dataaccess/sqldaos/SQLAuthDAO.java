@@ -22,6 +22,7 @@ public class SQLAuthDAO implements AuthDAO {
 
         } catch (DataAccessException e) {
             System.out.println("Error clearing table" + e.getMessage());
+            throw new RuntimeException("Error clearing table");
         }
     }
 

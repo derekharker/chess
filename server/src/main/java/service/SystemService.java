@@ -18,7 +18,13 @@ public class SystemService {
     }
 
     public ClearResponse clearApplication() {
-        gameDAO.clearApplication(authDAO, userDAO);
-        return new ClearResponse(null);
+        try {
+            gameDAO.clearApplication(authDAO, userDAO);
+            return new ClearResponse("Clear succeeded");
+        } catch (Exception e) {
+            System.err.println("Error caught in clearApplication");
+            throw new RuntimeException("Database connection failed", e);
+        }
     }
+
 }

@@ -169,10 +169,16 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public void clearApplication(AuthDAO authDAO, UserDAO userDAO) {
-        clearGames();
-        authDAO.clearAuths();
-        userDAO.clearUsers();
+        try {
+            clearGames();
+            authDAO.clearAuths();
+            userDAO.clearUsers();
+        } catch (Exception e) {
+            System.err.println("Error in clearApplication: " + e.getMessage());
+            throw new RuntimeException("Database connection failed", e);
+        }
     }
+
 
     private boolean updateGame(int gameID, ChessGame game) {
         String st = "UPDATE game SET game_info = ? WHERE game_id = ?";

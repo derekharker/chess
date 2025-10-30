@@ -28,7 +28,7 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to create database", ex);
+            throw new DataAccessException(ex.getMessage());
         }
     }
 
@@ -51,12 +51,15 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
+            System.out.println("Get connection error!");
+            // Here ?
             ex.printStackTrace();
-            throw new DataAccessException("failed to get connection", ex);
+            throw new DataAccessException("Database connection failed", ex);
         }
     }
 
     public static int executeUpdate(String statement, Object... parameters) throws DataAccessException{
+        System.out.println("Executes update");
         try (var connection = DatabaseManager.getConnection()) {
             try (var ps = connection.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < parameters.length; i++) {

@@ -80,14 +80,13 @@ public class SQLUserDAO implements UserDAO {
                 if (rs.next()) {
                     String hashPassword = rs.getString("password");
                     return BCrypt.checkpw(password, hashPassword);
-                } else {
-                    return false;
                 }
             }
         } catch (DataAccessException | SQLException ex) {
             System.out.println("Error in verifying user: " + ex.getMessage());
             ex.printStackTrace();
-            return false;
+            throw new RuntimeException("Error: Database connection failed", ex);
         }
+        return false;
     }
 }

@@ -46,6 +46,7 @@ public class SQLAuthDAO implements AuthDAO {
             return false;
         } catch (DataAccessException ex) {
             System.out.println("Data access error: " + ex.getMessage());
+            throw new RuntimeException("Error: Database connection failed", ex);
         }
         return false;
     }

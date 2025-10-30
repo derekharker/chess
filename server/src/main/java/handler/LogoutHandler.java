@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import request.LoginRequest;
 import response.LoginResponse;
 import response.LogoutResponse;
+import service.ErrorMessages;
 import service.UserService;
 import translator.Translation;
 
@@ -20,20 +21,25 @@ public class LogoutHandler {
     }
 
     public void handle(Context ctx) {
-
         String authToken = ctx.header("Authorization");
-
         UserService logoutService = new UserService(userDAO, authDAO);
-        LogoutResponse sum = logoutService.logout(authToken);
 
-        if (sum.message() == null) {
-            ctx.status(200);
-        } else {
-            ctx.status(401);
+        try {
+            LogoutResponse sum = logoutService.logout(authToken);
+
+            if (sum.message() == null) {
+                ctx.status(200);
+            } else {
+                System.out.println("Culprit!");
+                ctx.status(401);
+            }
+
+            ctx.json(sum);
+        } catch (Exception e) {
+            System.err.println("Database error during logout: " + e.getMessage());
+            ctx.status(500);
+            ctx.json(new LogoutResponse(ErrorMessages.SQLERROR));
         }
-
-        ctx.json(sum);
-
     }
 }
 

@@ -37,6 +37,8 @@ public class RegisterHandler {
             }
         }
 
+        System.out.println("If you're here Imma die");
+
         ctx.json(result);
     }
 }

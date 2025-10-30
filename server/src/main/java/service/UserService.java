@@ -34,7 +34,7 @@ public class UserService {
         if (regRequest.username() == null || regRequest.password() == null || regRequest.email() == null) {
             return new RegisterResponse(null, null, ErrorMessages.BADREQUEST);
         }
-        if (userDAO.getUser(regRequest.username()) != null) {
+        if (userDAO.userExists(regRequest.username())) {
             return new RegisterResponse(null, null, ErrorMessages.ALREADYTAKEN);
         }
         userDAO.createUser(new UserData(regRequest.username(), regRequest.password(), regRequest.email()));

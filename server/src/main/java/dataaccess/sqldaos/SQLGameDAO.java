@@ -3,6 +3,7 @@ package dataaccess.sqldaos;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import model.GameData;
 import response.JoinGameResponse;
@@ -17,7 +18,7 @@ import chess.ChessGame;
 
 import static dataaccess.DatabaseManager.executeUpdate;
 
-public class SQLGameDAO {
+public class SQLGameDAO implements GameDAO {
     private int initialGameDAO;
 
     public SQLGameDAO() {
@@ -150,7 +151,7 @@ public class SQLGameDAO {
     public int createGame(String gameName) {
         var st = "INSERT INTO game (game_id, game_name, game_info) VALUES (?, ?, ?)";
         int gameID = createGameID();
-        String gameString = (String) Translation.fromJsonToObject(new ChessGame());
+        String gameString = (String) Translation.fromObjectToJson(new ChessGame());
 
         try {
             executeUpdate(st, gameID, gameName, gameString);

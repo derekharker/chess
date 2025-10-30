@@ -11,7 +11,7 @@ import response.JoinGameResponse;
 
 import java.util.Collection;
 
-public class SQLDAOTests {
+public class SQLTests {
 
     SQLGameDAO gameDAO = new SQLGameDAO();
     SQLAuthDAO authDAO = new SQLAuthDAO();

@@ -33,12 +33,12 @@ public class MemoryUser implements UserDAO {
         return newUser;
     }
 
-    public UserData getUser(String username) {
+    public boolean userExists(String username) {
         for (UserData currentUser : userDataList) {
             if (currentUser.username().equals(username)) {
-                return currentUser;
+                return true;
             }
         };
-        return null;
+        return false;
     }
 }

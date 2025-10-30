@@ -1,6 +1,7 @@
 package dataaccess.sqldaos;
 
 
+import dataaccess.interfaces.UserDAO;
 import org.mindrot.jbcrypt.BCrypt;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
@@ -10,14 +11,14 @@ import java.sql.SQLException;
 
 import static dataaccess.DatabaseManager.executeUpdate;
 
-public class SQLUserDAO {
+public class SQLUserDAO implements UserDAO {
 
     public SQLUserDAO() {
 
     }
 
     @Override
-    void clearUsers() {
+    public void clearUsers() {
         var st = "DELETE FROM user";
         try {
             executeUpdate(st);

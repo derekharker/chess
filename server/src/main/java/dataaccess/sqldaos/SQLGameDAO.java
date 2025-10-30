@@ -178,16 +178,4 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException("Database connection failed", e);
         }
     }
-
-//    private boolean updateGame(int gameID, ChessGame game) {
-//        String st = "UPDATE game SET game_info = ? WHERE game_id = ?";
-//        String gameString = (String) Translation.fromObjectToJson(game);
-//        try {
-//            executeUpdate(st, gameID, gameString);
-//            return true;
-//        } catch (DataAccessException e) {
-//            System.out.println("Error creating a game: " + e.getMessage());
-//            return false;
-//        }
-//    }
 }

@@ -1,30 +1,35 @@
 package server;
 
 import handler.*;
-import io.javalin.*;
-import dataaccess.memory.MemoryGame;
-import dataaccess.memory.MemoryAuth;
-import dataaccess.memory.MemoryUser;
+import io.javalin.Javalin;
 import io.javalin.json.JavalinGson;
+import dataaccess.DataAccessException;
+import dataaccess.sqldaos.SQLUserDAO;
+import dataaccess.sqldaos.SQLAuthDAO;
+import dataaccess.sqldaos.SQLGameDAO;
+import static dataaccess.DatabaseManager.configureDatabase;
 
 public class Server {
 
     private Javalin javalin;
 
     public Server() {
-        javalin = Javalin.create(
-                config -> {
-                    config.staticFiles.add("web");
+        javalin = Javalin.create(config -> {
+            config.staticFiles.add("web");
+            config.jsonMapper(new JavalinGson());
+        });
 
-                    config.jsonMapper(new JavalinGson());
-                }
-        );
+        try {
+            configureDatabase();
+            System.out.println("Database configured successfully.");
+        } catch (DataAccessException e) {
+            System.out.println("Problem configuring database: " + e.getMessage());
+        }
 
-        MemoryUser userDAO = new MemoryUser();
-        MemoryAuth authDAO = new MemoryAuth();
-        MemoryGame gameDAO = new MemoryGame();
+        SQLUserDAO userDAO = new SQLUserDAO();
+        SQLAuthDAO authDAO = new SQLAuthDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
 
-        // Register endpoints
         javalin.delete("/db", ctx -> new ClearHandler(userDAO, authDAO, gameDAO).handle(ctx));
         javalin.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
         javalin.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));
@@ -43,5 +48,6 @@ public class Server {
 
     public void stop() {
         javalin.stop();
+        System.out.println("Server stopped.");
     }
 }

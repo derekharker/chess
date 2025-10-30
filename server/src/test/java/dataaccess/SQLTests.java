@@ -8,6 +8,7 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import response.JoinGameResponse;
+import dataaccess.DataAccessException;
 
 import java.util.Collection;
 

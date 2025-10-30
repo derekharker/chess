@@ -32,6 +32,8 @@ public class RegisterHandler {
                 ctx.status(403);
             } else if (result.message().equals(ErrorMessages.BADREQUEST)) {
                 ctx.status(400);
+            } else if (result.message().equals(ErrorMessages.SQLERROR)) {
+                ctx.status(500);
             }
         }
 

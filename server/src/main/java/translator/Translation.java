@@ -14,4 +14,8 @@ public class Translation {
     public static <T> T fromJsontoObjectNotRequest(String str, Class<T> type) {
         return GSON.fromJson(str, type);
     }
+
+    public static Object fromObjectToJson(Object result){
+        return GSON.toJson(result);
+    }
 }

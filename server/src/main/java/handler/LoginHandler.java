@@ -26,14 +26,8 @@ public class LoginHandler {
         UserService loginService = new UserService(userDAO, authDAO);
         LoginResponse response = loginService.login(loginRequest);
 
-        if (response.message() != null) {
-            // Switch case
-            switch (response.message()) {
-                case "Error: bad request" -> ctx.status(400);
-                case "Error: unauthorized" -> ctx.status(401);
-
-                default -> ctx.status(500);
-            }
+        if (response.username() == null) {
+            ctx.status(401);
         } else {
             ctx.status(200);
         }

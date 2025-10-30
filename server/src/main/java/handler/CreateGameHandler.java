@@ -1,6 +1,7 @@
 package handler;
 
 import response.CreateGameResponse;
+import service.ErrorMessages;
 import service.GameService;
 import translator.Translation;
 import dataaccess.interfaces.AuthDAO;
@@ -21,25 +22,25 @@ public class CreateGameHandler {
     }
 
     public void handle(Context ctx) {
+        System.out.println("Made it to the handler");
+
         String authToken = ctx.header("Authorization");
-        CreateGameRequest gameName = (CreateGameRequest) Translation.fromJsonToObject(ctx, CreateGameRequest.class);
+        System.out.println("Auth token entered into createGame success: " + authToken);
+
+        // Parse body
+        CreateGameRequest gameName = (CreateGameRequest)
+                Translation.fromJsonToObject(ctx, CreateGameRequest.class);
 
         CreateGameRequest createGameRequest = new CreateGameRequest(gameName.gameName(), authToken);
-
-        //Call service layer
         GameService gameService = new GameService(authDAO, gameDAO);
         CreateGameResponse createGameResponse = gameService.createGame(createGameRequest);
 
-        if (createGameResponse.message() != null) {
-            // Switch case same as Login Handler
-            switch (createGameResponse.message()) {
-                case "Error: bad request" -> ctx.status(400);
-                case "Error: unauthorized" -> ctx.status(401);
-
-                default -> ctx.status(500);
-            }
-        } else {
+        if (createGameResponse.message() == null) {
             ctx.status(200);
+        } else if (createGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {
+            ctx.status(401);
+        } else if (createGameResponse.message().equals(ErrorMessages.SQLERROR)) {
+            ctx.status(500);
         }
 
         ctx.json(createGameResponse);

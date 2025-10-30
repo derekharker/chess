@@ -21,14 +21,9 @@ public class ClearHandler {
     }
 
     public void handle(Context ctx) {
-        try {
-            SystemService clrService = new SystemService(gameDAO, authDAO, userDAO);
-            ClearResponse myResponse = clrService.clearApplication();
-            ctx.status(200);
-            ctx.json(myResponse);
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("Internal server error: " + e.getMessage());
-        }
+        SystemService clrService = new SystemService(gameDAO, authDAO, userDAO);
+        ClearResponse myResponse = clrService.clearApplication();
+        ctx.status(200);
+        ctx.json(myResponse);
     }
 }

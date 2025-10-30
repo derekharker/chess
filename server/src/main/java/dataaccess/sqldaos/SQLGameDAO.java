@@ -65,7 +65,7 @@ public class SQLGameDAO {
 
     @Override
     public JoinGameResponse updateUserInGame(int gameID, String username, ChessGame.TeamColor teamColor) {
-        if (!(teamColor == ChessGame.TeamColor.WHITE || teamColor == ChessGame.TeamColor.BLACK) {
+        if (!(teamColor == ChessGame.TeamColor.WHITE || teamColor == ChessGame.TeamColor.BLACK)) {
             return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
         if (!isEmpty(gameID, teamColor)) {

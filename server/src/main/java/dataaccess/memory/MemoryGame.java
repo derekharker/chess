@@ -20,7 +20,7 @@ public class MemoryGame implements GameDAO {
         initialGameID = 1;
     }
 
-    private int createGameID() {
+    public int createGameID() {
         return initialGameID++;
     }
 

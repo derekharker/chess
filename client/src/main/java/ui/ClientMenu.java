@@ -138,5 +138,23 @@ public class ClientMenu {
         System.out.println("6: Observe Game");
     }
 
+    public String evalPostLogin(String line, String authToken) {
+        try {
+            var tokens = line.toLowerCase().split(" ");
+            var cmd = (tokens.length > 0) ? tokens[0] : "help";
+
+            return switch (cmd) {
+                case "2" -> logout(authToken);
+                case "3" -> createGame(authToken);
+                case "4" -> listGames(authToken);
+                case "5" -> playGame(authToken);
+                case "6" -> observeGame(authToken);
+                default -> postLoginHelp();
+            };
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
 
 }

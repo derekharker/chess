@@ -1,5 +1,10 @@
 package ui;
 
+import request.LoginRequest;
+import request.RegisterRequest;
+import response.LoginResponse;
+import response.RegisterResponse;
+
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -43,7 +48,63 @@ public class ClientMenu {
     public String evalPreLogin(String line) {
         try {
             var tokens = line.toLowerCase().split(" ");
+            var cmd = (tokens.length > 0) ? tokens[0] : "help";
 
+            return switch (cmd) {
+                case "2" -> "quit";
+                case "3" -> login();
+                case "4" -> register();
+                default -> preLoginHelp();
+            };
+
+        } catch (Exception e) {
+            return e.getMessage();
         }
+    }
+
+    private String register() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your username: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Enter your password: ");
+        String password = scanner.nextLine();
+
+        System.out.print("Enter your email: ");
+        String email = scanner.nextLine();
+
+        RegisterResponse reg = facade.register(new RegisterRequest(username, password, email));
+        if (reg.authToken() != null) {
+            postLoginUI(reg.authToken());
+            return "";
+        } else {
+            return reg.message();
+        }
+    }
+
+    private String login() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your username: ");
+        String username = scanner.nextLine();
+
+        System.out.print("Enter your password: ");
+        String password = scanner.nextLine();
+
+        LoginResponse resp = facade.login(new LoginRequest(username, password));
+        if (resp.authToken() != null) {
+            postLoginUI(resp.authToken());
+            return "";
+        } else {
+            return resp.message();
+        }
+    }
+
+    private String preLoginHelp() {
+        return "Enter 1 to see help options" + "\n" +
+                "Enter 2 to quit" + "\n" +
+                "Enter 3 to login" + "\n" +
+                "Enter 4 to register" + "\n";
     }
 }

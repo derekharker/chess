@@ -19,6 +19,20 @@ public class BoardCreation {
         createHeaderList(out, teamColor);
     }
 
+    private boolean isPiece(int row, int col, ChessBoard board) {
+        if (board.getPiece(new ChessPosition(row, col)) == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean isLight(int row, int col) {
+        if (row % 2 == 0 && col % 2 != 0){
+            return true;
+        } else return row % 2 != 0 && col % 2 == 0;
+    }
+
     private void createHeaderList(PrintStream out, ChessGame.TeamColor teamColor) {
         assert teamColor == ChessGame.TeamColor.WHITE || teamColor == ChessGame.TeamColor.BLACK;
 
@@ -47,6 +61,27 @@ public class BoardCreation {
         out.print(EMPTY);
         out.print(header);
         out.print(EMPTY);
+    }
+
+    private static void setLight(PrintStream out) {
+        out.print(SET_BG_COLOR_RED);
+    }
+
+    private static void setDark(PrintStream out) {
+        out.print(SET_BG_COLOR_BLUE);
+    }
+
+    private static void setBackground(PrintStream out) {
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_BLUE);
+    }
+
+    private static void setWhiteText(PrintStream out) {
+        out.print(SET_TEXT_COLOR_WHITE);
+    }
+
+    private static void setBlackText(PrintStream out) {
+        out.print(SET_TEXT_COLOR_BLACK);
     }
 
     private void drawEmptySquare(PrintStream out) {
@@ -130,35 +165,10 @@ public class BoardCreation {
         };
     }
 
-    private boolean isPiece(int row, int col, ChessBoard board) {
-        if (board.getPiece(new ChessPosition(row, col)) == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    private boolean isLight(int row, int col) {
-        if (row % 2 == 0 && col % 2 != 0){
-            return true;
-        } else return row % 2 != 0 && col % 2 == 0;
-    }
-
     private void printRowNum(PrintStream out, int i) {
         setBackground(out);
         out.print(EMPTY);
         out.print(i);
         out.print(EMPTY);
     }
-
-    private static void setLight(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
-    }
-
-    private static void setDark(PrintStream out) {
-        out.print(SET_BG_COLOR_BLUE);
-    }
-
-
-
 }

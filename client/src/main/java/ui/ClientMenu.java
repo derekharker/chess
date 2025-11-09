@@ -12,6 +12,7 @@ import response.RegisterResponse;
 
 import java.util.HashMap;
 import java.util.Scanner;
+import serverHandler.ServerFacade;
 
 public class ClientMenu {
     private final ServerFacade facade;

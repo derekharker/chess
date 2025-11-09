@@ -64,15 +64,15 @@ public class BoardCreation {
     }
 
     private static void setLight(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
+        out.print(SET_BG_COLOR_LIGHT_GREY);
     }
 
     private static void setDark(PrintStream out) {
-        out.print(SET_BG_COLOR_BLUE);
+        out.print(SET_BG_COLOR_DARK_GREY);
     }
 
     private static void setBackground(PrintStream out) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_BG_COLOR_WHITE);
         out.print(SET_TEXT_COLOR_BLUE);
     }
 

@@ -107,4 +107,36 @@ public class ClientMenu {
                 "Enter 3 to login" + "\n" +
                 "Enter 4 to register" + "\n";
     }
+
+    public void postLoginUI(String authToken) {
+        System.out.print("Login success, select an option below: ");
+
+        String login = "Logged in";
+        while (!login.equals("Logged out")) {
+            printPostLogin();
+
+            Scanner scanner = new Scanner(System.in);
+
+            String ln = scanner.nextLine();
+            try {
+                login = evalPostLogin(ln, authToken);
+                System.out.print(login);
+            } catch (Throwable ex) {
+                var msg = ex.toString();
+                System.out.print(msg);
+            }
+        }
+        System.out.println();
+    }
+
+    private void printPostLogin() {
+        System.out.println("1: Help");
+        System.out.println("2: Logout");
+        System.out.println("3: Create Game");
+        System.out.println("4: List Games");
+        System.out.println("5: Play Game");
+        System.out.println("6: Observe Game");
+    }
+
+
 }

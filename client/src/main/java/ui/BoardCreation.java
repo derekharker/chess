@@ -130,5 +130,35 @@ public class BoardCreation {
         };
     }
 
+    private boolean isPiece(int row, int col, ChessBoard board) {
+        if (board.getPiece(new ChessPosition(row, col)) == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean isLight(int row, int col) {
+        if (row % 2 == 0 && col % 2 != 0){
+            return true;
+        } else return row % 2 != 0 && col % 2 == 0;
+    }
+
+    private void printRowNum(PrintStream out, int i) {
+        setBackground(out);
+        out.print(EMPTY);
+        out.print(i);
+        out.print(EMPTY);
+    }
+
+    private static void setLight(PrintStream out) {
+        out.print(SET_BG_COLOR_RED);
+    }
+
+    private static void setDark(PrintStream out) {
+        out.print(SET_BG_COLOR_BLUE);
+    }
+
+
 
 }

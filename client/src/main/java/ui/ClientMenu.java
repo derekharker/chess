@@ -1,7 +1,12 @@
 package ui;
 
+import chess.ChessGame;
+import model.GameData;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.ListGamesResponse;
 import response.LoginResponse;
 import response.RegisterResponse;
 
@@ -43,6 +48,31 @@ public class ClientMenu {
         System.out.println("2: Quit");
         System.out.println("3: Login");
         System.out.println("4: Register");
+    }
+
+    private String listGames(String authToken) {
+        ListGamesResponse listGamesResponse =  facade.listGames(authToken);
+
+        int gameNumber = 1;
+        for (GameData game : listGamesResponse.games()){
+            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() + ", White Username: " + game.getWhiteUsername() + ", Black Username: " + game.getBlackUsername());
+            gameIDMap.put(gameNumber, game.getGameID());
+            gameNumber ++;
+        }
+        return "";
+    }
+
+    private void showGame(int gameID, String authToken){
+        BoardCreation board = new BoardCreation();
+        ListGamesResponse listGamesResponse = facade.listGames(authToken);
+        for (GameData game : listGamesResponse.games()){
+            if (gameIDMap.get(gameID) == game.getGameID()){
+                System.out.println("White Orientation");
+                board.createBoard(ChessGame.TeamColor.WHITE, game.getGame().getBoard());
+                System.out.println("Black Orientation");
+                board.createBoard(ChessGame.TeamColor.BLACK, game.getGame().getBoard());
+            }
+        }
     }
 
     public String evalPreLogin(String line) {
@@ -101,6 +131,17 @@ public class ClientMenu {
         }
     }
 
+    private String observeGame(String authToken) {
+        listGames(authToken);
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the game number you'd like to observe: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine());
+        showGame(gameNumber,authToken);
+
+        return "";
+    }
+
     private String preLoginHelp() {
         return "Enter 1 to see help options" + "\n" +
                 "Enter 2 to quit" + "\n" +
@@ -154,6 +195,55 @@ public class ClientMenu {
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+
+    private String postLoginHelp(){
+        return "Enter 1 to see help options" + "\n" +
+                "Enter 2 to Logout" + "\n" +
+                "Enter 3 to Create a Game" + "\n" +
+                "Enter 4 to List the Games" + "\n" +
+                "Enter 5 to Play a Game" + "\n" +
+                "Enter 6 to Observe a Game" + "\n";
+    }
+
+    private String logout(String authToken) {
+        facade.logout(authToken);
+
+        return "Logged out";
+    }
+
+    private String playGame(String authToken) {
+        listGames(authToken);
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter which game to join: ");
+        int num = Integer.parseInt(scanner.nextLine());
+
+        ChessGame.TeamColor teamColor = null;
+        System.out.print("Enter which color you want to play. w for white and b for black (white is default): ");
+        String color = scanner.nextLine();
+
+        if (color.equals("b")) {
+            teamColor = ChessGame.TeamColor.BLACK;
+        } else {
+            teamColor = ChessGame.TeamColor.WHITE;
+        }
+        facade.joinGame(new JoinGameRequest(teamColor, gameIDMap.get(num), authToken));
+        showGame(num, authToken);
+
+        return "";
+    }
+
+    private String createGame(String authToken) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter new game name: ");
+        String gameName = scanner.nextLine();
+
+        facade.createGame(new CreateGameRequest(gameName, null), authToken);
+
+
+        return "";
     }
 
 

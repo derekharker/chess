@@ -67,6 +67,7 @@ public class ServerFacade {
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
         try {
             String stringResponse = clientCommunicator.doPut(url + "/game", jsonRequest, request.authToken());
+            System.out.print("Join Game Response return");
             return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, JoinGameResponse.class);
         } catch (IOException e) {
             System.out.println("Registering user failed: " + e.getMessage());

@@ -61,10 +61,7 @@ public class ClientCommunication {
                 System.out.println("Response: " + response.toString());
                 return response.toString();
             }
-        } else if (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
-            System.out.print("Bad request here");
-        }
-        else try (InputStream responseBody = connection.getErrorStream();
+        } else try (InputStream responseBody = connection.getErrorStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
             StringBuilder response = new StringBuilder();
             String line;

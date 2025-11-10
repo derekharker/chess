@@ -38,6 +38,8 @@ public class CreateGameHandler {
             GameService gameService = new GameService(authDAO, gameDAO);
             CreateGameResponse createGameResponse = gameService.createGame(createGameRequest);
 
+
+
             if (createGameResponse.message() == null) {
                 ctx.status(200);
             } else if (createGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {

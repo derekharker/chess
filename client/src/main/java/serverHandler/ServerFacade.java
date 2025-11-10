@@ -19,9 +19,8 @@ public class ServerFacade {
     }
 
     public RegisterResponse register(RegisterRequest request){
-        //translate to json
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
-        //Perform correct HTTP request
+
         try {
             String stringResponse = clientCommunicator.doPost(url + "/user", jsonRequest, null);
             return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, RegisterResponse.class);
@@ -42,7 +41,7 @@ public class ServerFacade {
     public LoginResponse login(LoginRequest request) {
         //translate to json
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
-        //Perform correct HTTP request
+
         try {
             String stringResponse = clientCommunicator.doPost(url + "/session", jsonRequest, null);
             LoginResponse testResponse = ClientTranslation.fromJsontoObjectNotRequest(stringResponse, LoginResponse.class);

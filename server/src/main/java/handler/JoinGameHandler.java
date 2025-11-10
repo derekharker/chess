@@ -28,6 +28,8 @@ public class JoinGameHandler {
             GameService gameService = new GameService(authDAO, gameDAO);
             JoinGameResponse joinGameResponse = gameService.joinGame(joinGameRequest);
 
+            System.out.print("In here! Handler");
+
             if (joinGameResponse.message() == null) {
                 ctx.status(200);
             } else if (joinGameResponse.message().equals(ErrorMessages.UNAUTHORIZED)) {

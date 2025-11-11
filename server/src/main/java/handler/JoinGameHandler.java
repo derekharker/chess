@@ -23,7 +23,7 @@ public class JoinGameHandler {
         try {
             String authToken = ctx.header("Authorization");
             JoinGameRequest joinHandle = (JoinGameRequest) Translation.fromJsonToObject(ctx, JoinGameRequest.class);
-            JoinGameRequest joinGameRequest = new JoinGameRequest(joinHandle.playerColor(), joinHandle.gameID(), authToken);
+            JoinGameRequest joinGameRequest = new JoinGameRequest(joinHandle.teamColor(), joinHandle.gameID(), authToken);
 
             GameService gameService = new GameService(authDAO, gameDAO);
             JoinGameResponse joinGameResponse = gameService.joinGame(joinGameRequest);

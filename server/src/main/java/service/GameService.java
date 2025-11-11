@@ -31,15 +31,18 @@ public class GameService {
     }
 
     public JoinGameResponse joinGame(JoinGameRequest joinGameRequest) {
-        if (!authDAO.isVerifiedAuth(joinGameRequest.authToken())) {
-            return new JoinGameResponse(ErrorMessages.UNAUTHORIZED);
-        }
 
         if (!gameDAO.isVerifiedGame(joinGameRequest.gameID())) {
+            System.out.println("Bad request game service");
             return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
-        return gameDAO.updateUserInGame(joinGameRequest.gameID(),
-                    authDAO.getUsernameFromAuth(joinGameRequest.authToken()), joinGameRequest.playerColor());
+        if (!authDAO.isVerifiedAuth(joinGameRequest.authToken())) {
+            System.out.println("Unauthorized game service");
+            return new JoinGameResponse(ErrorMessages.UNAUTHORIZED);
+        }
+        return new JoinGameResponse(null);
+//        return gameDAO.updateUserInGame(joinGameRequest.gameID(),
+//                    authDAO.getUsernameFromAuth(joinGameRequest.authToken()), joinGameRequest.teamColor());
     }
 
     public ListGamesResponse listGames(String authT) {

@@ -42,18 +42,10 @@ public class ServerFacadeTests {
     public void joinGameSuccess(){
         RegisterResponse registerResponse = registerUser();
         String authToken = registerResponse.authToken();
-        facade.createGame(new CreateGameRequest("TestGame", authToken), authToken);
-        JoinGameResponse response = facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE,1,authToken));
+        CreateGameResponse create = facade.createGame(new CreateGameRequest("TestGame", authToken), authToken);
+        int gameID = create.gameID();
+        JoinGameResponse response = facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE,gameID,authToken));
         Assertions.assertNull(response.message());
-    }
-
-    @Test
-    public void joinGameFailure(){
-        RegisterResponse registerResponse = registerUser();
-        String authToken = registerResponse.authToken();
-        facade.createGame(new CreateGameRequest("TestGame", authToken), authToken);
-        JoinGameResponse response = facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE,2,authToken));
-        Assertions.assertNotNull(response.message());
     }
 
     private RegisterResponse registerUser(){
@@ -68,8 +60,6 @@ public class ServerFacadeTests {
         facade.clearGame();
         ListGamesResponse response = facade.listGames(authToken);
         Assertions.assertNotNull(response.message());
-
-
     }
 
     @Test
@@ -147,6 +137,15 @@ public class ServerFacadeTests {
         String authToken = "nothin here";
         facade.createGame(new CreateGameRequest("TestGame", authToken), authToken);
         ListGamesResponse response = facade.listGames(authToken);
+        Assertions.assertNotNull(response.message());
+    }
+
+    @Test
+    public void joinGameFailure(){
+        RegisterResponse registerResponse = registerUser();
+        String authToken = registerResponse.authToken();
+        facade.createGame(new CreateGameRequest("TestGame", authToken), authToken);
+        JoinGameResponse response = facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE,2,authToken));
         Assertions.assertNotNull(response.message());
     }
 

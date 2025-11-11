@@ -137,12 +137,27 @@ public class ClientMenu {
         listGames(authToken);
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the game number you'd like to observe: ");
-        int gameNumber = Integer.parseInt(scanner.nextLine());
-        showGame(gameNumber,authToken);
+        int gameNumber = -1;
+        while (true) {
+            System.out.print("Enter the game number you'd like to observe: ");
+            String input = scanner.nextLine();
+            try {
+                gameNumber = Integer.parseInt(input);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+
+        try {
+            showGame(gameNumber, authToken);
+        } catch (Exception e) {
+            System.err.println("Game does not exist");
+        }
 
         return "";
     }
+
 
     private String preLoginHelp() {
         return "Enter 1 to see help options" + "\n" +
@@ -218,23 +233,38 @@ public class ClientMenu {
         listGames(authToken);
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter which game to join: ");
-        int num = Integer.parseInt(scanner.nextLine());
+        int num = -1;
+        while (true) {
+            System.out.print("Enter which game to join: ");
+            String input = scanner.nextLine();
+            try {
+                num = Integer.parseInt(input);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
 
-        ChessGame.TeamColor teamColor = null;
+        ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE; // default
         System.out.print("Enter which color you want to play. w for white and b for black (white is default): ");
-        String color = scanner.nextLine();
+        String color = scanner.nextLine().trim().toLowerCase();
 
         if (color.equals("b")) {
             teamColor = ChessGame.TeamColor.BLACK;
-        } else {
-            teamColor = ChessGame.TeamColor.WHITE;
+        } else if (!color.equals("w") && !color.isEmpty()) {
+            System.out.println("Invalid color choice. Defaulting to white.");
         }
-        facade.joinGame(new JoinGameRequest(teamColor, gameIDMap.get(num), authToken));
-        showGame(num, authToken);
+
+        try {
+            facade.joinGame(new JoinGameRequest(teamColor, gameIDMap.get(num), authToken));
+            showGame(num, authToken);
+        } catch (Exception e) {
+            System.err.println("Game does not exist");
+        }
 
         return "";
     }
+
 
     private String createGame(String authToken) {
         Scanner scanner = new Scanner(System.in);

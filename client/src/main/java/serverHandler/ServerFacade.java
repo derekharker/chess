@@ -65,12 +65,22 @@ public class ServerFacade {
 
     //Join the game with valid request
     public JoinGameResponse joinGame(JoinGameRequest request) {
-        String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
         try {
-            String stringResponse = clientCommunicator.doPut(url + "/game", jsonRequest, request.authToken());
-            return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, JoinGameResponse.class);
+            var obj = new com.google.gson.JsonObject();
+            if (request.playerColor() != null) {
+                obj.addProperty("playerColor", request.playerColor().name()); // "WHITE"/"BLACK"
+            }
+            obj.addProperty("gameID", request.gameID()); // numeric, NOT quoted
+            String body = obj.toString();
+
+            String resp = clientCommunicator.doPut(url + "/game", body, request.authToken());
+
+            // Join often returns 204 No Content on success; treat empty body as success
+            if (resp == null || resp.isBlank()) {
+                return new JoinGameResponse(null);
+            }
+            return ClientTranslation.fromJsontoObjectNotRequest(resp, JoinGameResponse.class);
         } catch (IOException e) {
-            System.out.println("Registering user failed: " + e.getMessage());
             return new JoinGameResponse("Join Game Failure");
         }
     }

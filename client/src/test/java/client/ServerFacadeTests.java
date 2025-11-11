@@ -9,7 +9,7 @@ import request.RegisterRequest;
 import response.*;
 import server.Server;
 
-import serverHandler.ServerFacade;
+import serverhandler.ServerFacade;
 
 
 public class ServerFacadeTests {

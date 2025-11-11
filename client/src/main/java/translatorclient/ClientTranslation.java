@@ -1,9 +1,9 @@
-package translatorClient;
+package translatorclient;
 
 import com.google.gson.Gson;
 
 public class ClientTranslation {
-    private static Gson GSON = new Gson();
+    private static final Gson GSON = new Gson();
 
     public static Object fromObjectToJson(Object result){
         return GSON.toJson(result);

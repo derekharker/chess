@@ -1,11 +1,11 @@
-package serverHandler;
+package serverhandler;
 
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
 import response.*;
-import translatorClient.ClientTranslation;
+import translatorclient.ClientTranslation;
 
 import java.io.IOException;
 

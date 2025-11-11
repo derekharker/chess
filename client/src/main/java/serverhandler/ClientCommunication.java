@@ -1,4 +1,4 @@
-package serverHandler;
+package serverhandler;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -11,7 +11,10 @@ public class ClientCommunication {
         return getResponseBody(connection);
     }
 
-    private static HttpURLConnection getHttpURLConnection(String urlString, String authToken, String requestMethod, boolean doOutput) throws IOException {
+    private static HttpURLConnection getHttpURLConnection(String urlString, String authToken,
+                                                          String requestMethod, boolean doOutput)
+            throws IOException {
+
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -61,16 +64,18 @@ public class ClientCommunication {
                 System.out.println("Response: " + response.toString());
                 return response.toString();
             }
-        } else try (InputStream responseBody = connection.getErrorStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line.trim());
+        } else {
+            try (InputStream responseBody = connection.getErrorStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                // Process the error response
+                System.err.println("Error Response: " + response.toString());
+                return response.toString();
             }
-            // Process the error response
-            System.err.println("Error Response: " + response.toString());
-            return response.toString();
         }
     }
 

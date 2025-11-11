@@ -12,7 +12,7 @@ import response.RegisterResponse;
 
 import java.util.HashMap;
 import java.util.Scanner;
-import serverHandler.ServerFacade;
+import serverhandler.ServerFacade;
 
 public class ClientMenu {
     private final ServerFacade facade;
@@ -56,7 +56,9 @@ public class ClientMenu {
 
         int gameNumber = 1;
         for (GameData game : listGamesResponse.games()){
-            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() + ", White Username: " + game.getWhiteUsername() + ", Black Username: " + game.getBlackUsername());
+            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() +
+                    ", White Username: " + game.getWhiteUsername() + ", Black Username: " +
+                    game.getBlackUsername());
             gameIDMap.put(gameNumber, game.getGameID());
             gameNumber ++;
         }

@@ -30,7 +30,9 @@ public class BoardCreation {
     private boolean isLight(int row, int col) {
         if (row % 2 == 0 && col % 2 != 0){
             return true;
-        } else return row % 2 != 0 && col % 2 == 0;
+        } else {
+            return row % 2 != 0 && col % 2 == 0;
+        }
     }
 
     private void createHeaderList(PrintStream out, ChessGame.TeamColor teamColor) {

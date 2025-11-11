@@ -87,7 +87,9 @@ public class BoardCreation {
     }
 
     private void drawEmptySquare(PrintStream out) {
-        out.print(EMPTY.repeat(3));
+        out.print(EMPTY);
+        out.print(" ");
+        out.print(EMPTY);
     }
 
     private void createRowList(PrintStream out, ChessGame.TeamColor teamColor, ChessBoard board) {
@@ -136,7 +138,7 @@ public class BoardCreation {
         if (isPiece(i, j, board)) {
             printPieceInfo(out, i, j, board);
         } else {
-            out.print(EMPTY.repeat(3));
+            drawEmptySquare(out);
         }
     }
 

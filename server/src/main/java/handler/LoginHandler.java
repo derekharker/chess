@@ -40,7 +40,6 @@ public class LoginHandler {
             }
 
             ctx.json(response);
-            System.out.println("Stays in here");
 
         } catch (Exception e) {
             ctx.status(500);

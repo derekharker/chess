@@ -30,7 +30,6 @@ public class LogoutHandler {
             if (sum.message() == null) {
                 ctx.status(200);
             } else {
-                System.out.println("Culprit!");
                 ctx.status(401);
             }
 

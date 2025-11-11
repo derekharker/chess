@@ -34,7 +34,6 @@ public class ClientMenu {
 
             try {
                 out = evalPreLogin(ln);
-                System.out.print(out);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -153,7 +152,7 @@ public class ClientMenu {
     }
 
     public void postLoginUI(String authToken) {
-        System.out.print("Login success, select an option below: ");
+        System.out.println("Login success, select an option below: ");
 
         String login = "Logged in";
         while (!login.equals("Logged out")) {
@@ -164,10 +163,10 @@ public class ClientMenu {
             String ln = scanner.nextLine();
             try {
                 login = evalPostLogin(ln, authToken);
-                System.out.print(login);
+                System.out.println(login);
             } catch (Throwable ex) {
                 var msg = ex.toString();
-                System.out.print(msg);
+                System.out.println("Error is here");
             }
         }
         System.out.println();

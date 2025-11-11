@@ -33,12 +33,10 @@ public class GameService {
     public JoinGameResponse joinGame(JoinGameRequest joinGameRequest) {
 
         if (!authDAO.isVerifiedAuth(joinGameRequest.authToken())) {
-            System.out.println("Unauthorized game service");
             return new JoinGameResponse(ErrorMessages.UNAUTHORIZED);
         }
 
         if (!gameDAO.isVerifiedGame(joinGameRequest.gameID())) {
-            System.out.println("Bad request game service");
             return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
 //        return new JoinGameResponse(null);

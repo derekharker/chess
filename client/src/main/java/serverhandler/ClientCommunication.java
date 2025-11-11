@@ -51,8 +51,6 @@ public class ClientCommunication {
 
     private String getResponseBody(HttpURLConnection connection) throws IOException {
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            System.out.println("Connection success 200");
-
             try (InputStream responseBody = connection.getInputStream();
                  BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
                 StringBuilder response = new StringBuilder();
@@ -60,8 +58,6 @@ public class ClientCommunication {
                 while ((line = reader.readLine()) != null) {
                     response.append(line.trim());
                 }
-                // Process the response
-                System.out.println("Response: " + response.toString());
                 return response.toString();
             }
         } else {
@@ -73,7 +69,15 @@ public class ClientCommunication {
                     response.append(line.trim());
                 }
                 // Process the error response
-                System.err.println("Error Response: " + response.toString());
+                if (response.toString().contains("already taken")) {
+                    System.err.println("Already Taken");
+                    System.out.println();
+                }
+                if (response.toString().contains("unauthorized")) {
+                    System.err.println("Unauthorized");
+                    System.out.println();
+                }
+
                 return response.toString();
             }
         }
@@ -83,7 +87,6 @@ public class ClientCommunication {
         try (OutputStream requestBody = connection.getOutputStream();) {
             byte[] input = body.getBytes("utf-8");
             requestBody.write(input, 0, input.length);
-            System.out.println("Body sent to server");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -28,18 +28,15 @@ public class UserService {
             if (!userDAO.isVerifiedUser(loginRequest.username(), loginRequest.password())) {
                 return new LoginResponse(null, null, ErrorMessages.UNAUTHORIZED);
             }
-            System.out.println("Chillin out here");
             return new LoginResponse(loginRequest.username(), authDAO.createAuth(loginRequest.username()), null);
 
         } catch (Exception e) {
-            System.out.println("Database error in login: " + e.getMessage());
             throw new RuntimeException("Error: Database connection failed", e);
         }
     }
 
 
     public RegisterResponse register(RegisterRequest regRequest) {
-        System.out.println("Trying to register!");
 
         if (regRequest.username() == null || regRequest.password() == null || regRequest.email() == null) {
             return new RegisterResponse(null, null, ErrorMessages.BADREQUEST);

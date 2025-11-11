@@ -67,8 +67,8 @@ public class ServerFacade {
     public JoinGameResponse joinGame(JoinGameRequest request) {
         try {
             var obj = new com.google.gson.JsonObject();
-            if (request.teamColor() != null) {
-                obj.addProperty("playerColor", request.teamColor().name()); // "WHITE"/"BLACK"
+            if (request.playerColor() != null) {
+                obj.addProperty("playerColor", request.playerColor().name()); // "WHITE"/"BLACK"
             }
             obj.addProperty("gameID", request.gameID()); // numeric, NOT quoted
             String body = obj.toString();

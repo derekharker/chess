@@ -2,6 +2,8 @@ package typehandler;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -59,5 +61,41 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
         }
     }
 
+    private ChessMove readChessMove(JsonReader jsonReader) throws IOException {
+        ChessPiece.PieceType promotion = null;
+        ChessPosition start = null;
+        ChessPosition end = null;
 
+        jsonReader.beginObject();
+
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            switch (name) {
+                case "startPosition" -> start = readChessPosition(jsonReader);
+                case "promotionPiece" -> promotion = ChessPiece.PieceType.valueOf(jsonReader.nextString());
+                case "endPosition" -> end = readChessPosition(jsonReader);
+            }
+        }
+
+
+        jsonReader.endObject();
+        return new ChessMove(start, end, promotion);
+    }
+
+    private ChessPosition readChessPosition(JsonReader jsonReader) throws IOException {
+        int row = 0;
+        int col = 0;
+
+        jsonReader.beginObject();
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            switch (name) {
+                case "column" -> col = jsonReader.nextInt();
+                case "row" -> row = jsonReader.nextInt();
+            }
+        }
+
+        jsonReader.endObject();
+        return new ChessPosition(row, col);
+    }
 }

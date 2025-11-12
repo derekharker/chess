@@ -40,4 +40,11 @@ public class ServerMessage {
     public int hashCode() {
         return Objects.hash(getServerMessageType());
     }
+
+    @Override
+    public String toString() {
+        return "ServerMessage{" +
+                "serverMessageType=" + serverMessageType +
+                '}';
+    }
 }

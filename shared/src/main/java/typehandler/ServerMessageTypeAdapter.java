@@ -1,9 +1,12 @@
 package typehandler;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -59,8 +62,56 @@ public class ServerMessageTypeAdapter extends TypeAdapter<ServerMessage> {
         };
     }
 
-    private ChessGame readChessGame(JsonReader jsonReader) throws IOException {
+    private ChessBoard readChessBoard(JsonReader jsonReader) throws IOException {
+        ChessBoard board = new ChessBoard();
+        jsonReader.beginObject();
 
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            if (name.equals("squares")) {
+                board = readSquares(jsonReader);
+            }
+        }
+        jsonReader.endObject();
+        return board;
     }
+
+    private ChessBoard readSquares(JsonReader jsonReader) throws IOException {
+        ChessBoard board = new ChessBoard();
+        jsonReader.beginArray();
+
+        for (int i = 0; i < 8; i++) {
+            jsonReader.beginArray();
+            for (int j = 0; j < 8; j++) {
+                if (jsonReader.peek() != JsonToken.NULL) {
+                    board.addPiece(new ChessPosition(8-i, j+1), readChessPiece(jsonReader));
+                } else {
+                    jsonReader.nextNull();
+                }
+            }
+            jsonReader.endArray();
+        }
+
+        jsonReader.endArray();
+        return board;
+    }
+
+    private ChessGame readChessGame(JsonReader jsonReader) throws IOException {
+        ChessGame game = new ChessGame();
+        jsonReader.beginObject();
+
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            switch (name) {
+                case "teamTurn" -> game.setTeamTurn(ChessGame.TeamColor.valueOf(jsonReader.nextString()));
+                case "board" -> game.setBoard(readChessBoard(jsonReader));
+                case "gameOver" -> game.setGameOver(jsonReader.nextBoolean());
+            }
+        }
+
+        jsonReader.endObject();
+        return game;
+    }
+
 
 }

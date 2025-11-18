@@ -14,6 +14,7 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
+    private boolean isGameOver = false;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
@@ -64,6 +65,9 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         Collection<ChessMove> validMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
         ChessGame.TeamColor teamColor = board.getPiece(startPosition).getTeamColor();
+        if (isGameOver) {
+            return validMoves;
+        }
 
         Iterator<ChessMove> iterator = validMoves.iterator();
         for (; iterator.hasNext(); ) {
@@ -240,6 +244,14 @@ public class ChessGame {
             }
         }
         return moves;
+    }
+
+    public void setGameOver(boolean over) {
+        isGameOver = over;
+    }
+
+    public boolean isGameOver() {
+        return isGameOver;
     }
 
     /**

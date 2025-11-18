@@ -2,6 +2,7 @@ package typehandler;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
@@ -113,5 +114,19 @@ public class ServerMessageTypeAdapter extends TypeAdapter<ServerMessage> {
         return game;
     }
 
+    private ChessPiece readChessPiece(JsonReader jsonReader) throws IOException {
+        ChessPiece.PieceType type = null;
+        ChessGame.TeamColor color = null;
 
+        jsonReader.beginObject();
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            switch (name) {
+                case "type" -> type = ChessPiece.PieceType.valueOf(jsonReader.nextString());
+                case "teamColor" -> color = ChessGame.TeamColor.valueOf(jsonReader.nextString());
+            }
+        }
+        jsonReader.endObject();
+        return new ChessPiece(color, type);
+    }
 }

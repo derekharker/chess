@@ -36,6 +36,29 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
+    public ChessGame getGame(int gameID){
+        String statement = "SELECT game_info FROM game WHERE game_id = ?";
+        ChessGame game = null;
+
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+
+            ps.setInt(1, gameID);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String gameInfo = rs.getString("game_info");
+                    game = Translation.fromJsontoObjectNotRequest(gameInfo, ChessGame.class);
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            System.out.println("Error getting the game with ID " + gameID + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return game;
+    }
+
+    @Override
     public Collection<GameData> listGames() {
         Collection<GameData> games = new ArrayList<>();
         String st = "SELECT game_id, white_username, black_username, game_name, game_info FROM game";
@@ -168,6 +191,35 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
+    public ChessGame.TeamColor getTeamColor(int gameID, String username) {
+        String statement = "SELECT white_username, black_username FROM game WHERE game_id = ?";
+        ChessGame.TeamColor teamColor = null;
+
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement)) {
+
+            ps.setInt(1, gameID);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String whiteUsername = rs.getString("white_username");
+                    String blackUsername = rs.getString("black_username");
+
+                    if (username.equals(whiteUsername)) {
+                        teamColor = ChessGame.TeamColor.WHITE;
+                    } else if (username.equals(blackUsername)) {
+                        teamColor = ChessGame.TeamColor.BLACK;
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            System.out.println("Error getting team color for username " + username + " and gameID " + gameID + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return teamColor;
+    }
+
+    @Override
     public void clearApplication(AuthDAO authDAO, UserDAO userDAO) {
         try {
             clearGames();
@@ -176,6 +228,19 @@ public class SQLGameDAO implements GameDAO {
         } catch (Exception e) {
             System.err.println("Error in clearApplication: " + e.getMessage());
             throw new RuntimeException("Database connection failed", e);
+        }
+    }
+
+    @Override
+    public boolean updateGame(int gameID, ChessGame game){
+        String statement= "UPDATE game SET game_info = ? WHERE game_id = ?";
+        String gameJson = (String) Translation.fromObjectToJson(game);
+        try{
+            executeUpdate(statement, gameJson, gameID);
+            return true;
+        }catch(DataAccessException e){
+            System.out.println("Error updating a game:" + e.getMessage());
+            return false;
         }
     }
 }

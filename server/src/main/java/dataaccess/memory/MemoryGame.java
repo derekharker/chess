@@ -87,4 +87,19 @@ public class MemoryGame implements GameDAO {
         gameList.add(newGame);
         return newGameID;
     }
+
+    @Override
+    public boolean updateGame(int gameID, ChessGame game) {
+        return false;
+    }
+
+    @Override
+    public ChessGame getGame(int i) {
+        return null;
+    }
+
+    @Override
+    public ChessGame.TeamColor getTeamColor(int gameID, String username) {
+        return null;
+    }
 }

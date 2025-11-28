@@ -51,7 +51,7 @@ public class WebSocketHandler {
             String username = new SQLAuthDAO().getUsernameFromAuth(command.getAuthToken()); //use handler/service/dao to get username
             if (username == null){
                 session.getRemote().sendString(Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
-                System.out.println("Bad auth token in onMesage WSHandler " + Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
+                System.out.println("Bad auth token in onMessage WSHandler " + Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
                 return;
             }
             connections.add(command.getGameID(), username, session);
@@ -98,7 +98,7 @@ public class WebSocketHandler {
                 throw new RuntimeException(e);
             }
         }
-        MakeMoveResponse response = gameService.makeMove(new MakeMoveRequest(command.getAuthString(), command.getGameID(), command.getMove(), getTeamColor(username, command.getGameID())));
+        MakeMoveResponse response = gameService.makeMove(new MakeMoveRequest(command.getAuthToken(), command.getGameID(), command.getMove(), getTeamColor(username, command.getGameID())));
 
         String messageToUser = response.message();
         String gameStatusMessage = null;
@@ -140,7 +140,7 @@ public class WebSocketHandler {
 
         try {
             if (!typeOfPlayer(command.getGameID(), username).equals("Observer")){
-                LeaveGameResponse response =  gameService.leaveGame(new LeaveGameRequest(command.getAuthString(), command.getGameID(), getTeamColor(username, command.getGameID())));
+                LeaveGameResponse response =  gameService.leaveGame(new LeaveGameRequest(command.getAuthToken(), command.getGameID(), getTeamColor(username, command.getGameID())));
                 if (response.message() != null){
                     connections.sendMessageToUser(command.getGameID(),username ,new ErrorMessage(response.message()));
                     return;
@@ -164,7 +164,7 @@ public class WebSocketHandler {
         }
         String messageToOthers = String.format("%s has resigned the game", username);
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
-        LeaveGameResponse response = gameService.resignGame(new ResignGameRequest(command.getAuthString(), command.getGameID()));
+        LeaveGameResponse response = gameService.resignGame(new ResignGameRequest(command.getAuthToken(), command.getGameID()));
         try {
             if (response.message() != null){
                 connections.sendMessageToUser(command.getGameID(),username ,new ErrorMessage(response.message()));

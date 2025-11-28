@@ -32,7 +32,7 @@ public class Server {
         SQLAuthDAO authDAO = new SQLAuthDAO();
         SQLGameDAO gameDAO = new SQLGameDAO();
 
-        javalin.ws("/ws", ctx -> new WebSocketHandler(userDAO, authDAO, gameDAO).handle(ctx));
+        javalin.ws("/ws", ctx -> new WebSocketHandler(userDAO, authDAO, gameDAO));
         javalin.delete("/db", ctx -> new ClearHandler(userDAO, authDAO, gameDAO).handle(ctx));
         javalin.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
         javalin.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));

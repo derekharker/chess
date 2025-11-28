@@ -1,28 +1,38 @@
 package serverhandler;
 
+import chess.ChessGame;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
 import response.*;
 import translatorclient.ClientTranslation;
+import ui.ClientMenu;
+import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveGameCommand;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.ResignCommand;
 
 import java.io.IOException;
 
 public class ServerFacade {
     private final String url;
-    private final ClientCommunication clientCommunicator = new ClientCommunication();
+    private final HTTPCommunicator httpCommunicator = new HTTPCommunicator();
+    private ClientMenu client;
+    private final WSCommunicator wsCommunicator;
 
 
     public ServerFacade(int port){
         url = "http://localhost:" + port;
+        this.client = client;
+        this.wsCommunicator = new WSCommunicator(url, this.client);
     }
 
     public RegisterResponse register(RegisterRequest request){
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
 
         try {
-            String stringResponse = clientCommunicator.doPost(url + "/user", jsonRequest, null);
+            String stringResponse = httpCommunicator.doPost(url + "/user", jsonRequest, null);
             return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, RegisterResponse.class);
         } catch (IOException e) {
             System.out.println("Registering user failed: " + e.getMessage());
@@ -32,7 +42,7 @@ public class ServerFacade {
 
     public LogoutResponse logout(String authToken) {
         try {
-            return new LogoutResponse(clientCommunicator.doDelete(url + "/session", authToken)) ;
+            return new LogoutResponse(httpCommunicator.doDelete(url + "/session", authToken)) ;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +53,7 @@ public class ServerFacade {
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
 
         try {
-            String stringResponse = clientCommunicator.doPost(url + "/session", jsonRequest, null);
+            String stringResponse = httpCommunicator.doPost(url + "/session", jsonRequest, null);
             LoginResponse testResponse = ClientTranslation.fromJsontoObjectNotRequest(stringResponse, LoginResponse.class);
             return testResponse;
         } catch (IOException e) {
@@ -54,7 +64,7 @@ public class ServerFacade {
 
     public ListGamesResponse listGames(String authToken) {
         try {
-            String stringResponse = clientCommunicator.doGet(url + "/game", authToken);
+            String stringResponse = httpCommunicator.doGet(url + "/game", authToken);
             return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, ListGamesResponse.class);
 
         } catch (IOException e) {
@@ -63,23 +73,16 @@ public class ServerFacade {
         }
     }
 
-    //Join the game with valid request
-    public JoinGameResponse joinGame(JoinGameRequest request) {
+    public JoinGameResponse joinGame(ConnectCommand command, ChessGame.TeamColor teamColor) {
+        //translate to json
+        String jsonRequest = (String) ClientTranslation.fromObjectToJson(command);
+        String httpRequest = (String) ClientTranslation.fromObjectToJson(new JoinGameRequest(teamColor, command.getGameID(), command.getAuthString()));
+        //Perform correct HTTP request
         try {
-            var obj = new com.google.gson.JsonObject();
-            if (request.playerColor() != null) {
-                obj.addProperty("playerColor", request.playerColor().name()); // "WHITE"/"BLACK"
-            }
-            obj.addProperty("gameID", request.gameID()); // numeric, NOT quoted
-            String body = obj.toString();
-
-            String resp = clientCommunicator.doPut(url + "/game", body, request.authToken());
-
-            // Join often returns 204 No Content on success; treat empty body as success
-            if (resp == null || resp.isBlank()) {
-                return new JoinGameResponse(null);
-            }
-            return ClientTranslation.fromJsontoObjectNotRequest(resp, JoinGameResponse.class);
+            String stringResponse = httpCommunicator.doPut(url + "/game", httpRequest, command.getAuthToken());
+            System.out.println("Going into WSHandler connect method");
+            wsCommunicator.connect(command);
+            return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, JoinGameResponse.class);
         } catch (IOException e) {
             return new JoinGameResponse("Join Game Failure");
         }
@@ -87,7 +90,7 @@ public class ServerFacade {
 
     public void clearGame(){
         try {
-            clientCommunicator.doDelete(url + "/db", null);
+            httpCommunicator.doDelete(url + "/db", null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -96,11 +99,27 @@ public class ServerFacade {
     public CreateGameResponse createGame(CreateGameRequest request, String authToken) {
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(request);
         try {
-            String response = clientCommunicator.doPost(url + "/game", jsonRequest, authToken);
+            String response = httpCommunicator.doPost(url + "/game", jsonRequest, authToken);
             return ClientTranslation.fromJsontoObjectNotRequest(response, CreateGameResponse.class);
         } catch (IOException e) {
             System.out.println("Creating Game failed: " + e.getMessage());
         }
         return null;
+    }
+
+    public void observeGame(String authToken, int gameID){
+        wsCommunicator.connect(new ConnectCommand(authToken, gameID));
+    }
+
+    public void leaveGame(LeaveGameCommand command){
+        wsCommunicator.leave(command);
+    }
+
+    public void makeMoveInGame(MakeMoveCommand command){
+        wsCommunicator.makeMove(command);
+    }
+
+    public void resignGame(ResignCommand command){
+        wsCommunicator.resign(command);
     }
 }

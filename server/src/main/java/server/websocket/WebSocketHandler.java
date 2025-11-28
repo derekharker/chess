@@ -23,6 +23,8 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+import com.google.gson.Gson;
+
 
 import java.io.IOException;
 
@@ -37,6 +39,8 @@ public class WebSocketHandler {
     private static final String CHECKMATEMESSAGE = "is in Checkmate";
     private static final String STALEMATEMESSAGE = "Game is in Stalemate";
 
+    private static final Gson gson = TestFactory.getGsonBuilder().create();
+
     public WebSocketHandler(SQLUserDAO userDAO, SQLAuthDAO authDAO, SQLGameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
@@ -45,17 +49,27 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws Exception {
+    public void onMessage(Session session, String message) {
+        System.out.println("Made it into onMessage WSHandler");
+        System.out.println("WS raw message: " + message);
+
         try {
-            UserGameCommand command = Translation.fromJsontoObjectNotRequest(message, UserGameCommand.class);
-            String username = new SQLAuthDAO().getUsernameFromAuth(command.getAuthToken()); //use handler/service/dao to get username
-            if (username == null){
-                session.getRemote().sendString(Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
-                System.out.println("Bad auth token in onMessage WSHandler " + Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
+            // Use the passoff-configured Gson
+            UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+
+            String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+            if (username == null) {
+                // Invalid auth: send ERROR back and bail
+                connections.sendMessageToUser(
+                        command.getGameID(),
+                        "UNKNOWN",
+                        new ErrorMessage("Invalid authToken."));
+                System.out.println("Bad auth token in onMessage WSHandler");
                 return;
             }
-            connections.add(command.getGameID(), username, session);
 
+            // Store this session by game + username
+            connections.add(command.getGameID(), username, session);
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, (ConnectCommand) command);
@@ -64,7 +78,8 @@ public class WebSocketHandler {
                 case RESIGN -> resign(session, username, (ResignCommand) command);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            // Optional: send an ERROR message back instead of killing the connection
         }
     }
 

@@ -46,7 +46,6 @@ public class DatabaseManager {
     }
 
     public static int executeUpdate(String statement, Object... parameters) throws DataAccessException{
-        System.out.println("Executes update");
         try (var connection = DatabaseManager.getConnection()) {
             try (var ps = connection.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < parameters.length; i++) {

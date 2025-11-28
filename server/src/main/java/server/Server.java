@@ -7,6 +7,8 @@ import dataaccess.DataAccessException;
 import dataaccess.sqldaos.SQLUserDAO;
 import dataaccess.sqldaos.SQLAuthDAO;
 import dataaccess.sqldaos.SQLGameDAO;
+import server.websocket.WebSocketHandler;
+
 import static dataaccess.DatabaseManager.configureDatabase;
 
 public class Server {
@@ -30,6 +32,7 @@ public class Server {
         SQLAuthDAO authDAO = new SQLAuthDAO();
         SQLGameDAO gameDAO = new SQLGameDAO();
 
+        javalin.ws("/ws", ctx -> new WebSocketHandler(userDAO, authDAO, gameDAO).handle(ctx));
         javalin.delete("/db", ctx -> new ClearHandler(userDAO, authDAO, gameDAO).handle(ctx));
         javalin.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
         javalin.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));

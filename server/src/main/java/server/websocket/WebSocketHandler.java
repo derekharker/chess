@@ -72,7 +72,7 @@ public class WebSocketHandler {
         System.out.println("(Connect wsHandler: The server thinks that this person is a " + typeOfPlayer(command.getGameID(), username));
         String messageToOthers = String.format("%s has joined the game as %s", username, typeOfPlayer(command.getGameID(), username));
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
-        GetGameResponse response = gameService.returnGame(new GetGameRequest(command.getAuthString(), command.getGameID()));
+        GetGameResponse response = gameService.returnGame(new GetGameRequest(command.getAuthToken(), command.getGameID()));
 
 
         LoadGameMessage loadGameMessage = new LoadGameMessage(response.game());

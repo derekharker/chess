@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import request.*;
@@ -86,5 +87,78 @@ public class GameService {
         return new GetGameResponse(gameDAO.getGame(request.gameID()), null);
     }
 
+    public GetTeamColorResponse getTeamColor(String username, int gameID){
+        if (!gameDAO.isVerifiedGame(gameID)) {
+            return new GetTeamColorResponse(ErrorMessages.BADREQUEST,null);
+        }
+        return new GetTeamColorResponse(null, gameDAO.getTeamColor(gameID, username));
+    }
 
+    private boolean isInCheck(ChessGame.TeamColor teamColor, ChessGame game){
+        ChessGame.TeamColor enemyColor = getEnemyColor(teamColor);
+        if (game.isInCheck(enemyColor)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isInCheckmate(ChessGame.TeamColor teamColor, ChessGame game){
+        ChessGame.TeamColor enemyColor = getEnemyColor(teamColor);
+        if (game.isInCheckmate(enemyColor)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isInStalemate(ChessGame.TeamColor teamColor, ChessGame game){
+        ChessGame.TeamColor enemyColor = getEnemyColor(teamColor);
+        if (game.isInStalemate(enemyColor)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private ChessGame.TeamColor getEnemyColor(ChessGame.TeamColor teamColor){
+        ChessGame.TeamColor enemyTeamColor;
+        if (teamColor.equals(ChessGame.TeamColor.WHITE)){
+            return  ChessGame.TeamColor.BLACK;
+        } else {
+            return ChessGame.TeamColor.WHITE;
+        }
+    }
+
+    public MakeMoveResponse makeMove(MakeMoveRequest request){
+        if (!authDAO.isVerifiedAuth(request.authToken())) {
+            return new MakeMoveResponse(ErrorMessages.UNAUTHORIZED, false, false, false, null);
+        }
+        if (!gameDAO.isVerifiedGame(request.gameID())) {
+            return new MakeMoveResponse(ErrorMessages.BADREQUEST,false, false,false, null);
+        }
+
+        ChessGame game = returnGame(new GetGameRequest(request.authToken(), request.gameID())).game();
+        if (!game.getTeamTurn().equals(request.teamColor())){return new MakeMoveResponse("It is not your turn", false, false, false, null);}
+        try {
+            game.makeMove(request.move());
+        } catch (InvalidMoveException e) {
+            System.out.println(e.toString() + e.getMessage());
+            return new MakeMoveResponse(e.getMessage(), false, false, false, null);
+        }
+
+        gameDAO.updateGame(request.gameID(), game);
+
+        if (isInCheckmate(request.teamColor(), game)){
+            return new MakeMoveResponse(null, false, true, false, game);
+        } else if (isInCheck(request.teamColor(), game)){
+            return new MakeMoveResponse(null, true, false, false, game);
+        } else if (isInStalemate(request.teamColor(), game)){
+            return new MakeMoveResponse(null, false, false, true, game);
+        } else {
+            return new MakeMoveResponse(null,false, false, false, game);
+        }
+
+
+    }
 }

@@ -39,8 +39,6 @@ public class WebSocketHandler {
     private static final String CHECKMATEMESSAGE = "is in Checkmate";
     private static final String STALEMATEMESSAGE = "Game is in Stalemate";
 
-    private static final Gson gson = TestFactory.getGsonBuilder().create();
-
     public WebSocketHandler(SQLUserDAO userDAO, SQLAuthDAO authDAO, SQLGameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
@@ -55,9 +53,10 @@ public class WebSocketHandler {
 
         try {
             // Use the passoff-configured Gson
-            UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+            UserGameCommand command = Translation.fromJsontoObjectNotRequest(message, UserGameCommand.class);
 
-            String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+            String username = new SQLAuthDAO().getUsernameFromAuth(command.getAuthToken());
+
             if (username == null) {
                 // Invalid auth: send ERROR back and bail
                 connections.sendMessageToUser(

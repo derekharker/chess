@@ -1,7 +1,16 @@
 package serverhandler;
 
 import jakarta.websocket.*;
-import jakarta.*;
+import jakarta.websocket.ClientEndpoint;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.WebSocketContainer;
+
 import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveGameCommand;
 import websocket.commands.MakeMoveCommand;

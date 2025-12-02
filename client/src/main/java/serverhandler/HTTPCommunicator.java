@@ -66,7 +66,7 @@ public class HTTPCommunicator {
     }
 
     private static HttpURLConnection getHttpURLConnection(String url, String authToken, String reqMethod, boolean out)
-        throws IOException {
+            throws IOException {
         URL newUrl = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) newUrl.openConnection();
 
@@ -77,13 +77,14 @@ public class HTTPCommunicator {
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
 
-        //Add an authToken if valid
+        // Add an authToken if valid
         if (authToken != null) {
-            return conn.addRequestProperty("Authorization", authToken);
+            conn.addRequestProperty("Authorization", authToken);
         }
 
         conn.connect();
         return conn;
     }
+
 
 }

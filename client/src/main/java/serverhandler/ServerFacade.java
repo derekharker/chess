@@ -22,7 +22,7 @@ public class ServerFacade {
     private final WSCommunicator wsCommunicator;
 
 
-    public ServerFacade(int port){
+    public ServerFacade(int port, ClientMenu client){
         url = "http://localhost:" + port;
         this.client = client;
         this.wsCommunicator = new WSCommunicator(url, this.client);
@@ -76,11 +76,11 @@ public class ServerFacade {
     public JoinGameResponse joinGame(ConnectCommand command, ChessGame.TeamColor teamColor) {
         //translate to json
         String jsonRequest = (String) ClientTranslation.fromObjectToJson(command);
-        String httpRequest = (String) ClientTranslation.fromObjectToJson(new JoinGameRequest(teamColor, command.getGameID(), command.getAuthString()));
+        String httpRequest = (String) ClientTranslation.fromObjectToJson(new JoinGameRequest(teamColor,
+                command.getGameID(), command.getAuthToken()));
         //Perform correct HTTP request
         try {
             String stringResponse = httpCommunicator.doPut(url + "/game", httpRequest, command.getAuthToken());
-            System.out.println("Going into WSHandler connect method");
             wsCommunicator.connect(command);
             return ClientTranslation.fromJsontoObjectNotRequest(stringResponse, JoinGameResponse.class);
         } catch (IOException e) {

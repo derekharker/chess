@@ -49,9 +49,6 @@ public class WebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
-        System.out.println("Made it into onMessage WSHandler");
-        System.out.println("WS raw message: " + message);
-
         try {
 
             UserGameCommand command = Translation.fromJsontoObjectNotRequest(message, UserGameCommand.class);
@@ -100,7 +97,6 @@ public class WebSocketHandler {
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command){
-        System.out.println("Made it into makeMove in WSHandler");
         if (typeOfPlayer(command.getGameID(), username).equals("Observer")){
             try {
                 System.out.println("Person is observer. makeMove WSHandler");
@@ -308,7 +304,7 @@ public class WebSocketHandler {
 
     @OnWebSocketError
     public void onError(Session session, Throwable throwable) {
-        System.err.println("WebSocket error: " + throwable.getMessage() + throwable.getStackTrace());
-        // Add additional error handling logic here
+        System.err.println("WebSocket error");
+        throwable.printStackTrace();
     }
 }

@@ -2,17 +2,10 @@ package ui;
 
 import chess.*;
 import model.GameData;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import request.LoginRequest;
-import request.RegisterRequest;
+import request.*;
 import response.ListGamesResponse;
 import response.LoginResponse;
 import response.RegisterResponse;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Scanner;
 import serverhandler.ServerFacade;
 import serverhandler.ServerMessageObserver;
 import websocket.commands.ConnectCommand;
@@ -26,76 +19,86 @@ import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Scanner;
+
 public class ClientMenu implements ServerMessageObserver {
     private final ServerFacade facade;
     HashMap<Integer, Integer> gameIDMap;
     ChessGame.TeamColor teamColor;
     ChessGame mostRecentGame;
 
+
     public ClientMenu(int port) {
-        facade = new ServerFacade(port);
-        gameIDMap = new HashMap<>();
+        facade = new ServerFacade(port, this);
+        gameIDMap = new HashMap<>(); //key is temporary game int, value is primary key of table
+
+
     }
 
-    public void run() {
-        Scanner scanner = new Scanner(System.in);
-        var out = "";
+    /**
+     * Pre Login UI
+     */
 
-        while (!out.equals("quit")) {
+
+    public void run(){
+
+
+        Scanner scanner = new Scanner(System.in);
+        var result = "";
+        while (!result.equals("quit")) {
             System.out.println("Welcome to Chess! Select an option below: ");
-            printPreLogin();
-            String ln = scanner.nextLine();
+            printPreLoginOptions();
+            String line = scanner.nextLine();
 
             try {
-                out = evalPreLogin(ln);
+                result = evalPreLogin(line);
+                System.out.print(result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
-
         System.out.println();
     }
 
-    private void printPreLogin() {
+
+
+    private void printPreLoginOptions(){
         System.out.println("1: Help");
         System.out.println("2: Quit");
         System.out.println("3: Login");
         System.out.println("4: Register");
     }
 
-    private String listGames(String authToken) {
-        ListGamesResponse listGamesResponse =  facade.listGames(authToken);
-
-        int gameNumber = 1;
-        for (GameData game : listGamesResponse.games()){
-            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() +
-                    ", White Username: " + game.getWhiteUsername() + ", Black Username: " +
-                    game.getBlackUsername());
-            gameIDMap.put(gameNumber, game.getGameID());
-            gameNumber ++;
-        }
-        return "";
-    }
-
-    public String evalPreLogin(String line) {
+    public String evalPreLogin(String input) {
         try {
-            var tokens = line.toLowerCase().split(" ");
+            var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
-
             return switch (cmd) {
                 case "2" -> "quit";
                 case "3" -> login();
                 case "4" -> register();
                 default -> preLoginHelp();
             };
-
-        } catch (Exception e) {
-            return e.getMessage();
+        } catch (Exception ex) {
+            return ex.getMessage();
         }
     }
 
-    private String register() {
+    /**
+     * Pre login methods
+     */
+
+    private String preLoginHelp(){
+        return "Enter 1 to see help options" + "\n" +
+                "Enter 2 to Quit" + "\n" +
+                "Enter 3 to Login" + "\n" +
+                "Enter 4 to Register" + "\n";
+    }
+
+    private String register(){
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter your username: ");
@@ -107,16 +110,16 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.print("Enter your email: ");
         String email = scanner.nextLine();
 
-        RegisterResponse reg = facade.register(new RegisterRequest(username, password, email));
-        if (reg.authToken() != null) {
-            postLoginUI(reg.authToken());
+        RegisterResponse regResponse = facade.register(new RegisterRequest(username,password, email));
+        if (regResponse.authToken() != null){
+            postLoginUI(regResponse.authToken());
             return "";
         } else {
-            return reg.message();
+            return regResponse.message();
         }
     }
 
-    private String login() {
+    private String login(){
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter your username: ");
@@ -125,83 +128,47 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.print("Enter your password: ");
         String password = scanner.nextLine();
 
-        LoginResponse resp = facade.login(new LoginRequest(username, password));
-        if (resp.authToken() != null) {
-            postLoginUI(resp.authToken());
+        LoginResponse response =  facade.login(new LoginRequest(username, password));
+        if (response.authToken() != null){
+            postLoginUI(response.authToken());
             return "";
         } else {
-            return resp.message();
+            return response.message();
         }
     }
 
-    private String observeGame(String authToken) {
-        listGames(authToken);
-        Scanner scanner = new Scanner(System.in);
 
-        int gameNumber = -1;
-        while (true) {
-            System.out.print("Enter the game number you'd like to observe: ");
-            String input = scanner.nextLine();
-            try {
-                gameNumber = Integer.parseInt(input);
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-            }
-        }
+    /**
+     * Post login UI
+     */
 
-        try {
-            facade.observeGame(authToken, gameNumber);
-        } catch (Exception e) {
-            System.err.println("Game does not exist");
-        }
+    public void postLoginUI(String authToken){
+        System.out.println("Log in success. Select an option below: ");
 
-        return "";
-    }
-
-
-    private String preLoginHelp() {
-        return "Enter 1 to see help options" + "\n" +
-                "Enter 2 to quit" + "\n" +
-                "Enter 3 to login" + "\n" +
-                "Enter 4 to register" + "\n";
-    }
-
-    public void postLoginUI(String authToken) {
-        System.out.println("Login success, select an option below: ");
-
-        String login = "Logged in";
-        while (!login.equals("Logged out")) {
-            printPostLogin();
-
+        String loggedIn = "Logged In";
+        while (!loggedIn.equals("Logged out")){
+            printPostLoginOptions();
             Scanner scanner = new Scanner(System.in);
 
-            String ln = scanner.nextLine();
+            String line = scanner.nextLine();
             try {
-                login = evalPostLogin(ln, authToken);
-                System.out.println(login);
-            } catch (Throwable ex) {
-                var msg = ex.toString();
-                System.out.println("Error is here");
+                loggedIn = evalPostLogin(line, authToken);
+                System.out.print(loggedIn);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
             }
         }
         System.out.println();
     }
 
-    private void printPostLogin() {
-        System.out.println("1: Help");
-        System.out.println("2: Logout");
-        System.out.println("3: Create Game");
-        System.out.println("4: List Games");
-        System.out.println("5: Play Game");
-        System.out.println("6: Observe Game");
-    }
 
-    public String evalPostLogin(String line, String authToken) {
+
+
+    public String evalPostLogin(String input, String authToken) {
         try {
-            var tokens = line.toLowerCase().split(" ");
+            var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
-
             return switch (cmd) {
                 case "2" -> logout(authToken);
                 case "3" -> createGame(authToken);
@@ -210,9 +177,22 @@ public class ClientMenu implements ServerMessageObserver {
                 case "6" -> observeGame(authToken);
                 default -> postLoginHelp();
             };
-        } catch (Exception e) {
-            return e.getMessage();
+        } catch (Exception ex) {
+            return ex.getMessage();
         }
+    }
+
+    /**
+     * Post login methods
+     */
+
+    private void printPostLoginOptions() {
+        System.out.println("1: Help");
+        System.out.println("2: Logout");
+        System.out.println("3: Create Game");
+        System.out.println("4: List Games");
+        System.out.println("5: Play Game");
+        System.out.println("6: Observe Game");
     }
 
     private String postLoginHelp(){
@@ -230,43 +210,54 @@ public class ClientMenu implements ServerMessageObserver {
         return "Logged out";
     }
 
-    private String playGame(String authToken) {
+    private String observeGame(String authToken) {
         listGames(authToken);
         Scanner scanner = new Scanner(System.in);
 
-        int num = -1;
-        while (true) {
-            System.out.print("Enter which game to join: ");
-            String input = scanner.nextLine();
-            try {
-                num = Integer.parseInt(input);
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-            }
-        }
-
-        ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE; // default
-        System.out.print("Enter which color you want to play. w for white and b for black (white is default): ");
-        String color = scanner.nextLine().trim().toLowerCase();
-
-        if (color.equals("b")) {
-            teamColor = ChessGame.TeamColor.BLACK;
-        } else if (!color.equals("w") && !color.isEmpty()) {
-            System.out.println("Invalid color choice. Defaulting to white.");
-        }
-
-        try {
-            facade.joinGame(new ConnectCommand(authToken, gameIDMap.get(num)), teamColor);
-        } catch (Exception e) {
-            System.err.println("Game does not exist");
-        }
-
-        gameplayUI(authToken, num);
+        System.out.print("Enter the game number you'd like to observe: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine());
+        int gameID = gameIDMap.get(gameNumber);
+        teamColor = ChessGame.TeamColor.WHITE;
+        facade.observeGame(authToken, gameID);
+        gameplayUI(authToken, gameID);
 
         return "";
     }
 
+    private String playGame(String authToken) {
+        listGames(authToken);
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the game number you'd like to join: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter the color you'd like to join as, select w for white or b for black. If you don't select either, white will be selected: ");
+        String color = scanner.nextLine();
+        if (color.equals("b")){
+            teamColor = ChessGame.TeamColor.BLACK;
+        } else
+        {
+            teamColor = ChessGame.TeamColor.WHITE;
+        }
+
+        facade.joinGame(new ConnectCommand(authToken, gameIDMap.get(gameNumber)), teamColor);
+
+        gameplayUI(authToken, gameNumber);
+
+        return "";
+    }
+
+    private String listGames(String authToken) {
+        ListGamesResponse listGamesResponse =  facade.listGames(authToken);
+
+        int gameNumber = 1;
+        for (GameData game : listGamesResponse.games()){
+            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() + ", White Username: " + game.getWhiteUsername() + ", Black Username: " + game.getBlackUsername());
+            gameIDMap.put(gameNumber, game.getGameID());
+            gameNumber ++;
+        }
+        return "";
+    }
 
     private String createGame(String authToken) {
         Scanner scanner = new Scanner(System.in);
@@ -280,18 +271,21 @@ public class ClientMenu implements ServerMessageObserver {
         return "";
     }
 
-    //Gameplay phase 6
 
-    public void gameplayUI(String authToken, int gameID) {
-        boolean going = true;
-        while (going == true) {
+    /**
+     * Gameplay UI
+     */
+
+    public void gameplayUI(String authToken, int gameID){
+        boolean inProgress = true;
+        while (inProgress == true){
             printGameplayOptions();
-            Scanner sc = new Scanner(System.in);
+            Scanner scanner = new Scanner(System.in);
 
-            String line = sc.nextLine();
+            String line = scanner.nextLine();
             try {
-                going = evalGameplay(line, authToken, gameID);
-
+                inProgress = evalGameplay(line, authToken, gameID);
+//                System.out.print(loggedIn);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -300,10 +294,6 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.println();
     }
 
-    public boolean redrawBoard(String authToken) {
-        displayBoard(mostRecentGame.getBoard(), null);
-        return true;
-    }
 
     public boolean evalGameplay(String input, String authToken, int gameID) {
         try {
@@ -323,50 +313,32 @@ public class ClientMenu implements ServerMessageObserver {
         return true;   //remove this later
     }
 
+    public boolean redrawBoard(String authToken) {
+        if (mostRecentGame == null) {
+            System.out.println("No game loaded yet. Join or observe a game first.");
+            return true;
+        }
+        displayBoard(mostRecentGame.getBoard(), null);
+        return true;
+    }
+
+
     private boolean leaveGame(String authToken, int gameID) {
         teamColor = null;
         facade.leaveGame(new LeaveGameCommand(authToken, gameID));
         return false;
     }
-
-    //If on board check type
-    private ChessPiece.PieceType evalPieceType(int pieceType) {
-        assert pieceType >= 0 && pieceType <= 4;
-        return switch(pieceType){
-            case 0 -> null;
-            case 1 -> ChessPiece.PieceType.QUEEN;
-            case 2 -> ChessPiece.PieceType.BISHOP;
-            case 3 -> ChessPiece.PieceType.KNIGHT;
-            case 4 -> ChessPiece.PieceType.ROOK;
-            default -> throw new IllegalArgumentException("Unexpected value: " + pieceType);
-        };
-    }
-
     private boolean makeMove(String authToken, int gameID) {
-        //ask user input for moving
-        System.out.println("Enter the location of the piece you would like to move (Ex: e2): ");
-        ChessPosition pos = getPositionFromInput();
-        System.out.println("Enter the location you would like to move to (Ex: e5): ");
-        ChessPosition end = getPositionFromInput();
+        System.out.println("Enter the location of the piece you would like to move (Ex: a4): ");
+        ChessPosition startPosition = getPositionFromInput();
+        System.out.println("Enter the location you would like to move to (Ex: a5): ");
+        ChessPosition endPosition = getPositionFromInput();
 
         ChessPiece.PieceType promotionPieceType = promotionOptions();
-        ChessMove newMove = new ChessMove(pos, end, promotionPieceType);
+        ChessMove newMove = new ChessMove(startPosition, endPosition, promotionPieceType);
 
         facade.makeMoveInGame(new MakeMoveCommand(authToken, gameID, newMove));
         return true;
-    }
-
-    private ChessPosition getPositionFromInput(){
-        Scanner scanner = new Scanner(System.in);
-        String location = scanner.nextLine();
-        //makes sure that there is a piece there and that it is for the right team potentially
-        int row = translateRow(location);
-        int col = ColumnTranslator.translateCol(location);
-        if (row >= 9 || col >= 9){
-            System.out.println("Invalid input, try again: ");
-            return getPositionFromInput();
-        }
-        return new ChessPosition(row, col);
     }
 
     private ChessPiece.PieceType promotionOptions(){
@@ -386,48 +358,52 @@ public class ClientMenu implements ServerMessageObserver {
         return evalPieceType(pieceType);
     }
 
+    private ChessPiece.PieceType evalPieceType(int pieceType) {
+        assert pieceType >= 0 && pieceType <= 4;
+        return switch(pieceType){
+            case 0 -> null;
+            case 1 -> ChessPiece.PieceType.QUEEN;
+            case 2 -> ChessPiece.PieceType.BISHOP;
+            case 3 -> ChessPiece.PieceType.KNIGHT;
+            case 4 -> ChessPiece.PieceType.ROOK;
+            default -> throw new IllegalArgumentException("Unexpected value: " + pieceType);
+        };
+    }
+
     private boolean resign(String authToken, int gameID) {
         facade.resignGame(new ResignCommand(authToken, gameID));
         return true;
     }
 
-    private boolean gameplayHelp(){
-        //help print options
-        System.out.println("Enter 1 to see help options" + "\n" +
-                "Enter 2 to Redraw the Chess Board" + "\n" +
-                "Enter 3 to Leave the Game" + "\n" +
-                "Enter 4 to Make a Move" + "\n" +
-                "Enter 5 to Resign" + "\n" +
-                "Enter 6 to Highlight Legal Moves" + "\n");
-        return true;
-    }
-
     private boolean highlightLegalMoves(String authToken, int gameID) {
-        System.out.println("Enter the location of the piece you would like to see (Ex: e2): ");
-        Scanner sc = new Scanner(System.in);
-        String loc = sc.nextLine();
-
-        int row = translateRow(loc);
-        int col = ColumnTranslator.translateCol(loc);
-
-        if (row >= 9 || col >= 9) {
+        //takes in the position of the piece to check for
+        System.out.println("Enter the location of the piece you would like to check (Example: a4): ");
+        Scanner scanner = new Scanner(System.in);
+        String location = scanner.nextLine();
+        //makes sure that there is a piece there and that it is for the right team potentially
+        int row = translateRow(location);
+        int col =  ColumnTranslator.translateCol(location);
+//        System.out.println("Row = " + row + ". Col = " + col);
+        if (row >= 9 || col >= 9){
             System.out.println("Invalid input");
             return highlightLegalMoves(authToken, gameID);
         }
-        //list of moves
-        Collection<ChessMove> moves;
+        //get the list of potential moves for that piece
+        Collection<ChessMove> chessMoves;
         ChessGame game = mostRecentGame;
         assert game != null;
-        if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
-            moves = game.validMoves(new ChessPosition(row, col));
+        if (game.getBoard().getPiece(new ChessPosition(row, col))!= null){
+            chessMoves = game.validMoves(new ChessPosition(row, col));
         } else {
-            System.out.println("No valid moves");
+            System.out.println("There are no valid moves");
             return true;
         }
-        //display with moves at the end
-        displayBoard(game.getBoard(), moves);
+
+        displayBoard(game.getBoard(), chessMoves);
+
         return true;
     }
+
 
     private void printGameplayOptions() {
         System.out.println("1: Help ");
@@ -438,14 +414,42 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.println("6: Highlight Legal Moves");
     }
 
+    private boolean gameplayHelp(){
+        System.out.println("Enter 1 to see help options" + "\n" +
+                "Enter 2 to Redraw the Chess Board" + "\n" +
+                "Enter 3 to Leave the Game" + "\n" +
+                "Enter 4 to Make a Move" + "\n" +
+                "Enter 5 to Resign" + "\n" +
+                "Enter 6 to Highlight Legal Moves" + "\n");
+        return true;
+    }
+
+
+    /**
+     * Helper functions
+     */
+
     private void displayBoard(ChessBoard board, Collection<ChessMove> validMoves){
         BoardCreation boardCreator = new BoardCreation();
         boardCreator.createBoard(teamColor, board, validMoves);
     }
 
+    private int translateRow(String location){
+        if (location.length() == 2 && Character.isLetter(location.charAt(0)) && Character.isDigit(location.charAt(1))) {
+            // Get the second character and convert it to an integer
+            char numberChar = location.charAt(1);
+            return Character.getNumericValue(numberChar);
+        } else {
+            return 10; // out of range
+        }
+    }
+
+    /**
+     * Client Messaging
+     */
     @Override
     public void notify(ServerMessage message) {
-//        System.out.println("Entering client notifier. Received: " + message);
+//        System.out.println("Entering client notifier. Recieved: " + message);
         switch (message.getServerMessageType()) {
             case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
             case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
@@ -471,13 +475,16 @@ public class ClientMenu implements ServerMessageObserver {
 
     }
 
-
-    private int translateRow(String location){
-        if (location.length() == 2 && Character.isLetter(location.charAt(0)) && Character.isDigit(location.charAt(1))) {
-            char numberChar = location.charAt(1);
-            return Character.getNumericValue(numberChar);
-        } else {
-            return 10; // out of range
+    private ChessPosition getPositionFromInput(){
+        Scanner scanner = new Scanner(System.in);
+        String location = scanner.nextLine();
+        //makes sure that there is a piece there and that it is for the right team potentially
+        int row = translateRow(location);
+        int col = ColumnTranslator.translateCol(location);
+        if (row >= 9 || col >= 9){
+            System.out.println("Invalid input, try again: ");
+            return getPositionFromInput();
         }
+        return new ChessPosition(row, col);
     }
 }

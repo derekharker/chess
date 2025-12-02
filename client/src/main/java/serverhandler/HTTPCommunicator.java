@@ -68,7 +68,7 @@ public class HTTPCommunicator {
     private static HttpURLConnection getHttpURLConnection(String url, String authToken, String reqMethod, boolean out)
         throws IOException {
         URL newUrl = new URL(url);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) newUrl.openConnection();
 
         conn.setReadTimeout(5000);
         conn.setRequestMethod(reqMethod);

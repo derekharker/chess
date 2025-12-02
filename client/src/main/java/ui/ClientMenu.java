@@ -14,11 +14,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
 import serverhandler.ServerFacade;
+import serverhandler.ServerMessageObserver;
+import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.ResignCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
-public class ClientMenu {
+import static ui.EscapeSequences.*;
+
+public class ClientMenu implements ServerMessageObserver {
     private final ServerFacade facade;
     HashMap<Integer, Integer> gameIDMap;
     ChessGame.TeamColor teamColor;
@@ -68,19 +76,6 @@ public class ClientMenu {
             gameNumber ++;
         }
         return "";
-    }
-
-    private void showGame(int gameID, String authToken){
-        BoardCreation board = new BoardCreation();
-        ListGamesResponse listGamesResponse = facade.listGames(authToken);
-        for (GameData game : listGamesResponse.games()){
-            if (gameIDMap.get(gameID) == game.getGameID()){
-                System.out.println("White Orientation");
-                board.createBoard(ChessGame.TeamColor.WHITE, game.getGame().getBoard());
-                System.out.println("Black Orientation");
-                board.createBoard(ChessGame.TeamColor.BLACK, game.getGame().getBoard());
-            }
-        }
     }
 
     public String evalPreLogin(String line) {
@@ -156,7 +151,7 @@ public class ClientMenu {
         }
 
         try {
-            showGame(gameNumber, authToken);
+            facade.observeGame(authToken, gameNumber);
         } catch (Exception e) {
             System.err.println("Game does not exist");
         }
@@ -262,11 +257,12 @@ public class ClientMenu {
         }
 
         try {
-            facade.joinGame(new JoinGameRequest(teamColor, gameIDMap.get(num), authToken));
-            showGame(num, authToken);
+            facade.joinGame(new ConnectCommand(authToken, gameIDMap.get(num)), teamColor);
         } catch (Exception e) {
             System.err.println("Game does not exist");
         }
+
+        gameplayUI(authToken, num);
 
         return "";
     }
@@ -289,12 +285,12 @@ public class ClientMenu {
     public void gameplayUI(String authToken, int gameID) {
         boolean going = true;
         while (going == true) {
-            printGamePlayOptions();
+            printGameplayOptions();
             Scanner sc = new Scanner(System.in);
 
             String line = sc.nextLine();
             try {
-                going = evalGamePlay(line, authToken, gameID);
+                going = evalGameplay(line, authToken, gameID);
 
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -358,6 +354,19 @@ public class ClientMenu {
 
         facade.makeMoveInGame(new MakeMoveCommand(authToken, gameID, newMove));
         return true;
+    }
+
+    private ChessPosition getPositionFromInput(){
+        Scanner scanner = new Scanner(System.in);
+        String location = scanner.nextLine();
+        //makes sure that there is a piece there and that it is for the right team potentially
+        int row = translateRow(location);
+        int col = ColumnTranslator.translateCol(location);
+        if (row >= 9 || col >= 9){
+            System.out.println("Invalid input, try again: ");
+            return getPositionFromInput();
+        }
+        return new ChessPosition(row, col);
     }
 
     private ChessPiece.PieceType promotionOptions(){
@@ -434,4 +443,41 @@ public class ClientMenu {
         boardCreator.createBoard(teamColor, board, validMoves);
     }
 
+    @Override
+    public void notify(ServerMessage message) {
+//        System.out.println("Entering client notifier. Received: " + message);
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+        }
+    }
+
+    private void displayNotification(String message){
+        System.out.print(SET_TEXT_COLOR_YELLOW);
+        System.out.println(message);
+        System.out.print(RESET_TEXT_COLOR);
+    }
+
+    private void displayError(String message){
+        System.out.print(SET_TEXT_COLOR_BLUE);
+        System.out.println(message);
+        System.out.print(RESET_TEXT_COLOR);
+    }
+
+    private void loadGame(ChessGame game){
+        mostRecentGame = game;
+        displayBoard(game.getBoard(), null);
+
+    }
+
+
+    private int translateRow(String location){
+        if (location.length() == 2 && Character.isLetter(location.charAt(0)) && Character.isDigit(location.charAt(1))) {
+            char numberChar = location.charAt(1);
+            return Character.getNumericValue(numberChar);
+        } else {
+            return 10; // out of range
+        }
+    }
 }

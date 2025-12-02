@@ -103,45 +103,71 @@ public class WebSocketHandler {
         if (typeOfPlayer(command.getGameID(), username).equals("Observer")){
             try {
                 System.out.println("Person is observer. makeMove WSHandler");
-                connections.sendMessageToUser(command.getGameID(), username,new ErrorMessage("Observers can't make moves."));
+                connections.sendMessageToUser(command.getGameID(), username,
+                        new ErrorMessage("Observers can't make moves."));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            return;
         }
-        MakeMoveResponse response = gameService.makeMove(new MakeMoveRequest(command.getAuthToken(), command.getGameID(), command.getMove(), getTeamColor(username, command.getGameID())));
+
+        GetGameResponse gameResponse =
+                gameService.returnGame(new GetGameRequest(command.getAuthToken(), command.getGameID()));
+        if (gameResponse.game() != null && gameResponse.game().isGameOver()) {
+            try {
+                connections.sendMessageToUser(command.getGameID(), username,
+                        new ErrorMessage("Game is already over."));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
+        MakeMoveResponse response = gameService.makeMove(
+                new MakeMoveRequest(
+                        command.getAuthToken(),
+                        command.getGameID(),
+                        command.getMove(),
+                        getTeamColor(username, command.getGameID())
+                )
+        );
 
         String messageToUser = response.message();
         String gameStatusMessage = null;
         ChessGame.TeamColor enemyColor = enemyColor(getTeamColor(username, command.getGameID()));
+
         if (response.isInCheckmate()){
-            gameStatusMessage = String.format("%s %s", enemyColor, CHECKMATEMESSAGE);
+            gameStatusMessage = String.format("%s is in Checkmate", enemyColor);
         } else if (response.isInCheck()){
-            gameStatusMessage = String.format("%s %s", enemyColor, CHECKMESSAGE);
+            gameStatusMessage = String.format("%s is in Check", enemyColor);
         } else if (response.isInStalemate()){
-            gameStatusMessage = STALEMATEMESSAGE;
+            gameStatusMessage = "Game is in Stalemate";
         }
 
         try {
-            //if messageToUser is not null, just send error to him, then return
             if (messageToUser != null){
-                connections.sendMessageToUser(command.getGameID(), username, new ErrorMessage(messageToUser));
+                connections.sendMessageToUser(command.getGameID(), username,
+                        new ErrorMessage(messageToUser));
             } else {
-                //load the new game for everyone
                 ChessGame gameToReturn = response.game();
                 LoadGameMessage loadGameMessage = new LoadGameMessage(gameToReturn);
                 connections.sendMessageToAll(command.getGameID(), loadGameMessage);
-                //send what move he made to everyone
-                String moveMessage = moveTranslator(command.getMove(), getTeamColor(username, command.getGameID()));
-                connections.sendMessageToAllButUser(command.getGameID(), username, new NotificationMessage(moveMessage));
-                //send game status message if there is one.
+
+                String moveMessage = moveTranslator(command.getMove(),
+                        getTeamColor(username, command.getGameID()));
+                connections.sendMessageToAllButUser(command.getGameID(), username,
+                        new NotificationMessage(moveMessage));
+
                 if (gameStatusMessage != null){
-                    connections.sendMessageToAll(command.getGameID(), new NotificationMessage(gameStatusMessage));
+                    connections.sendMessageToAll(command.getGameID(),
+                            new NotificationMessage(gameStatusMessage));
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 
     private void leaveGame(Session session, String username, LeaveGameCommand command){
@@ -172,9 +198,11 @@ public class WebSocketHandler {
                 throw new RuntimeException(e);
             }
         }
+
         String messageToOthers = String.format("%s has resigned the game", username);
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
         LeaveGameResponse response = gameService.resignGame(new ResignGameRequest(command.getAuthToken(), command.getGameID()));
+
         try {
             if (response.message() != null){
                 connections.sendMessageToUser(command.getGameID(),username ,new ErrorMessage(response.message()));

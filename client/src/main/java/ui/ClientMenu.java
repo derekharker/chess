@@ -1,6 +1,9 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import model.GameData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
@@ -10,15 +13,19 @@ import response.ListGamesResponse;
 import response.LoginResponse;
 import response.RegisterResponse;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
 import serverhandler.ServerFacade;
 import websocket.commands.LeaveGameCommand;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.ResignCommand;
 
 public class ClientMenu {
     private final ServerFacade facade;
     HashMap<Integer, Integer> gameIDMap;
     ChessGame.TeamColor teamColor;
+    ChessGame mostRecentGame;
 
     public ClientMenu(int port) {
         facade = new ServerFacade(port);
@@ -329,6 +336,101 @@ public class ClientMenu {
         return false;
     }
 
+    //If on board check type
+    private ChessPiece.PieceType evalPieceType(int pieceType) {
+        assert pieceType >= 0 && pieceType <= 4;
+        return switch(pieceType){
+            case 0 -> null;
+            case 1 -> ChessPiece.PieceType.QUEEN;
+            case 2 -> ChessPiece.PieceType.BISHOP;
+            case 3 -> ChessPiece.PieceType.KNIGHT;
+            case 4 -> ChessPiece.PieceType.ROOK;
+            default -> throw new IllegalArgumentException("Unexpected value: " + pieceType);
+        };
+    }
+
+    private boolean makeMove(String authToken, int gameID) {
+        //ask user input for moving
+        System.out.println("Enter the location of the piece you would like to move (Ex: e2): ");
+        ChessPosition pos = getPositionFromInput();
+        System.out.println("Enter the location you would like to move to (Ex: e5): ");
+        ChessPosition end = getPositionFromInput();
+
+        ChessPiece.PieceType promotionPieceType = promotionOptions();
+        ChessMove newMove = new ChessMove(pos, end, promotionPieceType);
+
+        facade.makeMoveInGame(new MakeMoveCommand(authToken, gameID, newMove));
+        return true;
+    }
+
+    private ChessPiece.PieceType promotionOptions(){
+        System.out.println("If you are promoting a pawn, select the option below, or just press 0: ");
+        System.out.println("0: No promotion");
+        System.out.println("1: Queen");
+        System.out.println("2: Bishop");
+        System.out.println("3: Knight");
+        System.out.println("4: Rook");
+
+        Scanner scanner = new Scanner(System.in);
+        int pieceType = scanner.nextInt();
+        if (pieceType > 4 || pieceType < 0){
+            System.out.println("Incorrect input, try again.");
+            return promotionOptions();
+        }
+        return evalPieceType(pieceType);
+    }
+
+    private boolean resign(String authToken, int gameID) {
+        facade.resignGame(new ResignCommand(authToken, gameID));
+        return true;
+    }
+
+    private boolean gameplayHelp(){
+        //help print options
+        System.out.println("Enter 1 to see help options" + "\n" +
+                "Enter 2 to Redraw the Chess Board" + "\n" +
+                "Enter 3 to Leave the Game" + "\n" +
+                "Enter 4 to Make a Move" + "\n" +
+                "Enter 5 to Resign" + "\n" +
+                "Enter 6 to Highlight Legal Moves" + "\n");
+        return true;
+    }
+
+    private boolean highlightLegalMoves(String authToken, int gameID) {
+        System.out.println("Enter the location of the piece you would like to see (Ex: e2): ");
+        Scanner sc = new Scanner(System.in);
+        String loc = sc.nextLine();
+
+        int row = translateRow(loc);
+        int col = ColumnTranslator.translateCol(loc);
+
+        if (row >= 9 || col >= 9) {
+            System.out.println("Invalid input");
+            return highlightLegalMoves(authToken, gameID);
+        }
+        //list of moves
+        Collection<ChessMove> moves;
+        ChessGame game = mostRecentGame;
+        assert game != null;
+        if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
+            moves = game.validMoves(new ChessPosition(row, col));
+        } else {
+            System.out.println("No valid moves");
+            return true;
+        }
+        //display with moves at the end
+        displayBoard(game.getBoard(), moves);
+        return true;
+    }
+
+    private void printGameplayOptions() {
+        System.out.println("1: Help ");
+        System.out.println("2: Redraw Chess Board ");
+        System.out.println("3: Leave ");
+        System.out.println("4: Make Move ");
+        System.out.println("5: Resign");
+        System.out.println("6: Highlight Legal Moves");
+    }
 
 
 }

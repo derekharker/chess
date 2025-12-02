@@ -1,6 +1,7 @@
 package server.websocket;
 
 import org.eclipse.jetty.websocket.api.Session;
+import translator.Translation;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -18,7 +19,9 @@ public class ConnectionManager {
             if (existingCollection == null) {
                 existingCollection = new CopyOnWriteArrayList<>();
             }
-            boolean exists = existingCollection.stream().anyMatch(conn -> conn.username.equals(username) && conn.session.equals(session));
+            boolean exists = existingCollection.stream().anyMatch(conn ->
+                    conn.username.equals(username) && conn.session.equals(session));
+            //If it doesn't exist. add
             if (!exists) {
                 existingCollection.add(connection);
             }
@@ -36,13 +39,17 @@ public class ConnectionManager {
     public void sendMessageToUser(int gameID, String username, ServerMessage message) throws IOException {
         var removeList = new ArrayList<Connection>();
         Collection<Connection> gameConnections = connections.get(gameID);
+        String json = Translation.fromObjectToJson(message).toString();
+
+        System.out.println("WS -> " + username + ": " + json);
+
         for (var c : gameConnections) {
             if (c.session.isOpen()) {
                 if (c.username.equals(username)) {
-                    c.send(message.toString());
+                    c.send(json);
                 }
             } else {
-                System.out.println("The session is not open (sendMessage to user/ConnectionManager) ");
+                System.out.println("The session is not open");
                 removeList.add(c);
             }
         }
@@ -55,13 +62,18 @@ public class ConnectionManager {
     public void sendMessageToAllButUser(int gameID, String excludeUsername, ServerMessage message) throws IOException {
         var removeList = new ArrayList<Connection>();
         Collection<Connection> gameConnections = connections.get(gameID);
+
+        String json = Translation.fromObjectToJson(message).toString();
+
+        System.out.println("WS -> ALL BUT " + excludeUsername + " (" + gameID + "): " + json);
+
         for (var c : gameConnections) {
             if (c.session.isOpen()) {
                 if (!c.username.equals(excludeUsername)) {
-                    c.send(message.toString());
+                    c.send(json);
                 }
             } else {
-                System.out.println("The session is not open (sendMessage to user/ConnectionManager) ");
+                System.out.println("The session is not open");
                 removeList.add(c);
             }
         }
@@ -75,11 +87,15 @@ public class ConnectionManager {
     public void sendMessageToAll(int gameID, ServerMessage message) throws IOException {
         var removeList = new ArrayList<Connection>();
         Collection<Connection> gameConnections = connections.get(gameID);
+
+        String json = Translation.fromObjectToJson(message).toString();
+        System.out.println("WS -> ALL(" + gameID + "): " + json);
+
         for (var c : gameConnections) {
             if (c.session.isOpen()) {
-                c.send(message.toString());
+                c.send(json);
             } else {
-                System.out.println("The session is not open (sendMessage to user/ConnectionManager) ");
+                System.out.println("The session is not open");
                 removeList.add(c);
             }
         }

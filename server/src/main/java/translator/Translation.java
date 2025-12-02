@@ -1,10 +1,13 @@
 package translator;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.javalin.http.Context;
+import typehandler.CommandTypeAdapter;
+import websocket.commands.UserGameCommand;
 
 public class Translation {
-    private static final Gson GSON = new Gson();
+    private static Gson GSON = prepareGson();
 
     public static <T> T fromJsonToObject(Context ctx, Class<T> classOfT) {
         return GSON.fromJson(ctx.body(), classOfT);
@@ -16,5 +19,11 @@ public class Translation {
 
     public static Object fromObjectToJson(Object result){
         return GSON.toJson(result);
+    }
+
+    private static Gson prepareGson() {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(UserGameCommand.class, new CommandTypeAdapter());
+        return builder.create();
     }
 }

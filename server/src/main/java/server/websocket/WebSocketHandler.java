@@ -47,23 +47,20 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) {
+    public void onMessage(Session session, String message) throws Exception {
         System.out.println("Made it into onMessage WSHandler");
         System.out.println("WS raw message: " + message);
 
         try {
-            // Use the passoff-configured Gson
+
             UserGameCommand command = Translation.fromJsontoObjectNotRequest(message, UserGameCommand.class);
 
             String username = new SQLAuthDAO().getUsernameFromAuth(command.getAuthToken());
 
             if (username == null) {
                 // Invalid auth: send ERROR back and bail
-                connections.sendMessageToUser(
-                        command.getGameID(),
-                        "UNKNOWN",
-                        new ErrorMessage("Invalid authToken."));
-                System.out.println("Bad auth token in onMessage WSHandler");
+                session.getRemote().sendString(Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
+                System.out.println("Bad auth token in onMesage WSHandler " + Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
                 return;
             }
 
@@ -77,8 +74,7 @@ public class WebSocketHandler {
                 case RESIGN -> resign(session, username, (ResignCommand) command);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            // Optional: send an ERROR message back instead of killing the connection
+            throw new RuntimeException(e);
         }
     }
 

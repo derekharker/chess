@@ -29,34 +29,35 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
 
     @Override
     public UserGameCommand read(JsonReader jsonReader) throws IOException {
-        ChessMove move = null;
         String authToken = null;
-        UserGameCommand.CommandType type = null;
+        ChessGame.TeamColor teamColor = null;
         int gameID = 0;
-        ChessGame.TeamColor color = null;
+        UserGameCommand.CommandType commandType = null;
+        ChessMove move = null;
 
         jsonReader.beginObject();
 
         while (jsonReader.hasNext()) {
             String name = jsonReader.nextName();
             switch (name) {
-                case "move" -> move = readChessMove(jsonReader);
-                case "authToken" -> authToken = jsonReader.toString();
-                case "commandType" -> type = UserGameCommand.CommandType.valueOf(jsonReader.toString());
+                case "authToken" -> authToken = jsonReader.nextString();
                 case "gameID" -> gameID = jsonReader.nextInt();
+                case "commandType" -> commandType = UserGameCommand.CommandType.valueOf(jsonReader.nextString());
+                case "move" -> move = readChessMove(jsonReader);
+
             }
         }
 
         jsonReader.endObject();
 
-        if (type == null) {
+        if(commandType == null) {
             return null;
         } else {
-            return switch(type) {
+            return switch (commandType) {
                 case CONNECT -> new ConnectCommand(authToken, gameID);
-                case RESIGN -> new ResignCommand(authToken, gameID);
-                case LEAVE -> new LeaveGameCommand(authToken, gameID);
                 case MAKE_MOVE -> new MakeMoveCommand(authToken, gameID, move);
+                case LEAVE -> new LeaveGameCommand(authToken, gameID);
+                case RESIGN -> new ResignCommand(authToken, gameID);
             };
         }
     }
@@ -90,7 +91,7 @@ public class CommandTypeAdapter extends TypeAdapter<UserGameCommand> {
         while (jsonReader.hasNext()) {
             String name = jsonReader.nextName();
             switch (name) {
-                case "column" -> col = jsonReader.nextInt();
+                case "col" -> col = jsonReader.nextInt();
                 case "row" -> row = jsonReader.nextInt();
             }
         }

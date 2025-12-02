@@ -13,10 +13,12 @@ import response.RegisterResponse;
 import java.util.HashMap;
 import java.util.Scanner;
 import serverhandler.ServerFacade;
+import websocket.commands.LeaveGameCommand;
 
 public class ClientMenu {
     private final ServerFacade facade;
     HashMap<Integer, Integer> gameIDMap;
+    ChessGame.TeamColor teamColor;
 
     public ClientMenu(int port) {
         facade = new ServerFacade(port);
@@ -277,6 +279,56 @@ public class ClientMenu {
 
         return "";
     }
+
+    //Gameplay phase 6
+
+    public void gameplayUI(String authToken, int gameID) {
+        boolean going = true;
+        while (going == true) {
+            printGamePlayOptions();
+            Scanner sc = new Scanner(System.in);
+
+            String line = sc.nextLine();
+            try {
+                going = evalGamePlay(line, authToken, gameID);
+
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
+            }
+        }
+        System.out.println();
+    }
+
+    public boolean redrawBoard(String authToken) {
+        displayBoard(mostRecentGame.getBoard(), null);
+        return true;
+    }
+
+    public boolean evalGameplay(String input, String authToken, int gameID) {
+        try {
+            var tokens = input.toLowerCase().split(" ");
+            var cmd = (tokens.length > 0) ? tokens[0] : "help";
+            return switch (cmd) {
+                case "2" -> redrawBoard(authToken);
+                case "3" -> leaveGame(authToken, gameID);
+                case "4" -> makeMove(authToken, gameID);
+                case "5" -> resign(authToken, gameID);
+                case "6" -> highlightLegalMoves(authToken, gameID);
+                default -> gameplayHelp();
+            };
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return true;   //remove this later
+    }
+
+    private boolean leaveGame(String authToken, int gameID) {
+        teamColor = null;
+        facade.leaveGame(new LeaveGameCommand(authToken, gameID));
+        return false;
+    }
+
 
 
 }

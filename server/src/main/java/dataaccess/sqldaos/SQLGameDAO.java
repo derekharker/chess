@@ -92,7 +92,9 @@ public class SQLGameDAO implements GameDAO {
         if (!(teamColor == ChessGame.TeamColor.WHITE || teamColor == ChessGame.TeamColor.BLACK)) {
             return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
-        if (!isEmpty(gameID, teamColor)) {
+
+        if (username != null && !isEmpty(gameID, teamColor)) {
+            System.out.println("error in update user");
             return new JoinGameResponse(ErrorMessages.ALREADYTAKEN);
         }
 

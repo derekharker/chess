@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import dataaccess.DataAccessException;
 import dataaccess.sqldaos.SQLAuthDAO;
 import dataaccess.sqldaos.SQLGameDAO;
 import dataaccess.sqldaos.SQLUserDAO;
@@ -170,15 +171,27 @@ public class WebSocketHandler {
 
 
 
-    private void leaveGame(Session session, String username, LeaveGameCommand command){
+    private void leaveGame(Session session, String username, LeaveGameCommand command) {
         String messageToOthers = String.format("%s has left the game", username);
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
 
         try {
-            if (!typeOfPlayer(command.getGameID(), username).equals("Observer")){
-                LeaveGameResponse response =  gameService.leaveGame(new LeaveGameRequest(command.getAuthToken(), command.getGameID(), getTeamColor(username, command.getGameID())));
-                if (response.message() != null){
-                    connections.sendMessageToUser(command.getGameID(),username ,new ErrorMessage(response.message()));
+
+            if (!typeOfPlayer(command.getGameID(), username).equals("Observer")) {
+                LeaveGameResponse response = gameService.leaveGame(
+                        new LeaveGameRequest(
+                                command.getAuthToken(),
+                                command.getGameID(),
+                                getTeamColor(username, command.getGameID())
+                        )
+                );
+
+                if (response.message() != null) {
+                    connections.sendMessageToUser(
+                            command.getGameID(),
+                            username,
+                            new ErrorMessage(response.message())
+                    );
                     return;
                 }
             }
@@ -189,6 +202,9 @@ public class WebSocketHandler {
             throw new RuntimeException(e);
         }
     }
+
+
+
 
     private void resign(Session session, String username, ResignCommand command){
         if (typeOfPlayer(command.getGameID(), username).equals("Observer")){

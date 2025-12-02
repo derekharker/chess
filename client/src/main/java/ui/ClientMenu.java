@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import model.GameData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
@@ -432,5 +429,9 @@ public class ClientMenu {
         System.out.println("6: Highlight Legal Moves");
     }
 
+    private void displayBoard(ChessBoard board, Collection<ChessMove> validMoves){
+        BoardCreation boardCreator = new BoardCreation();
+        boardCreator.createBoard(teamColor, board, validMoves);
+    }
 
 }

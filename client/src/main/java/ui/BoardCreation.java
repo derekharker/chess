@@ -1,21 +1,19 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
 
 public class BoardCreation {
-    public void createBoard(ChessGame.TeamColor teamColor, ChessBoard board) {
+    public void createBoard(ChessGame.TeamColor teamColor, ChessBoard board, Collection<ChessMove> validMoves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         createHeaderList(out, teamColor);
-        createRowList(out, teamColor, board);
+        createRowList(out, teamColor, board, validMoves);
         createHeaderList(out, teamColor);
     }
 
@@ -92,29 +90,29 @@ public class BoardCreation {
         out.print(EMPTY);
     }
 
-    private void createRowList(PrintStream out, ChessGame.TeamColor teamColor, ChessBoard board) {
+    private void createRowList(PrintStream out, ChessGame.TeamColor teamColor, ChessBoard board, Collection<ChessMove> moves) {
         if (teamColor == ChessGame.TeamColor.WHITE) {
             for (int i = 8; i > 0; i--) {
-                drawRow(out, i, board, teamColor);
+                drawRow(out, i, board, teamColor, moves);
             }
         } else {
             for (int j = 1; j < 9; j++) {
-                drawRow(out, j, board, teamColor);
+                drawRow(out, j, board, teamColor, moves);
             }
         }
     }
 
-    private void drawRow(PrintStream out, int row, ChessBoard board, ChessGame.TeamColor teamColor) {
+    private void drawRow(PrintStream out, int row, ChessBoard board, ChessGame.TeamColor teamColor, Collection<ChessMove> validMove) {
         assert row > 0 && row < 9;
 
         printRowNum(out, row);
         if (teamColor == ChessGame.TeamColor.WHITE) {
             for (int i = 1; i < 9; i++) {
-                printSquareInfo(out, row, i, board);
+                printSquareInfo(out, row, i, board, validMove);
             }
         } else {
             for (int j = 8; j > 0; j--) {
-                printSquareInfo(out, row, j, board);
+                printSquareInfo(out, row, j, board, validMove);
             }
         }
 
@@ -124,14 +122,21 @@ public class BoardCreation {
         out.println();
     }
 
-    private void printSquareInfo(PrintStream out, int i, int j, ChessBoard board) {
+    private void printSquareInfo(PrintStream out, int i, int j, ChessBoard board, Collection<ChessMove> moves) {
         assert i > 0 && i < 9;
 
         //Choosing the BG
-        if (isLight(i, j)) {
-            setLight(out);
+        if (moves != null) {
+            if (isStartMove(i, j, moves)) {
+                setStartPos(out);
+            } else if (isPossibleMove(i, j, moves)) {
+                checkSetEndPosDarkOrLight(i, j, out);
+            } else {
+                //if not, just the start pos
+                checkSetDarkOrLight(i, j, out);
+            }
         } else {
-            setDark(out);
+            checkSetDarkOrLight(i, j, out);
         }
 
         //Is piece or not
@@ -140,6 +145,54 @@ public class BoardCreation {
         } else {
             drawEmptySquare(out);
         }
+    }
+
+    private boolean isPossibleMove(int row, int col, Collection<ChessMove> validMoves){
+        ChessPosition endPosition = new ChessPosition(row, col);
+        for (ChessMove move : validMoves){
+            if (move.getEndPosition().equals(endPosition)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isStartMove(int row, int col, Collection<ChessMove> validMoves){
+        ChessPosition startPosition = new ChessPosition(row, col);
+        for (ChessMove move : validMoves){
+            if (move.getStartPosition().equals(startPosition)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void setStartPos(PrintStream out){
+        out.print(SET_BG_COLOR_BLUE);
+    }
+
+    private void checkSetDarkOrLight(int row, int col, PrintStream out){
+        if (isLight(row, col)){
+            setLight(out);
+        } else {
+            setDark(out);
+        }
+    }
+
+    private void checkSetEndPosDarkOrLight(int row, int col, PrintStream out){
+        if (isLight(row, col)){
+            setLightEndPosition(out);
+        } else {
+            setDarkEndPosition(out);
+        }
+    }
+
+    private static void setDarkEndPosition(PrintStream out){
+        out.print(SET_BG_COLOR_DARK_GREY);
+    }
+
+    private static void setLightEndPosition(PrintStream out){
+        out.print(SET_BG_COLOR_LIGHT_GREY);
     }
 
     private void printPieceInfo(PrintStream out, int i, int j, ChessBoard board) {

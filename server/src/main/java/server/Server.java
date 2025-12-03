@@ -10,6 +10,8 @@ import dataaccess.sqldaos.SQLGameDAO;
 import org.eclipse.jetty.websocket.api.Session;
 import server.websocket.WebSocketHandler;
 
+import java.time.Duration;
+
 import static dataaccess.DatabaseManager.configureDatabase;
 
 public class Server {
@@ -36,6 +38,9 @@ public class Server {
         var wsHandler = new server.websocket.WebSocketHandler(userDAO, authDAO, gameDAO);
 
         javalin.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.session.setIdleTimeout(Duration.ZERO);
+            });
             ws.onMessage(ctx -> {
                 try {
                     Session session = ctx.session;      // Jetty Session

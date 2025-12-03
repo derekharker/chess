@@ -94,7 +94,6 @@ public class SQLGameDAO implements GameDAO {
         }
 
         if (username != null && !isEmpty(gameID, teamColor)) {
-            System.out.println("error in update user");
             return new JoinGameResponse(ErrorMessages.ALREADYTAKEN);
         }
 

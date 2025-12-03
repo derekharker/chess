@@ -28,6 +28,9 @@ public class ClientMenu implements ServerMessageObserver {
     HashMap<Integer, Integer> gameIDMap;
     ChessGame.TeamColor teamColor;
     ChessGame mostRecentGame;
+    private final Scanner scanner = new Scanner(System.in);
+    private enum UIMode { PRE_LOGIN, POST_LOGIN, GAMEPLAY }
+    private UIMode currentMode = UIMode.PRE_LOGIN;
 
 
     public ClientMenu(int port) {
@@ -43,11 +46,11 @@ public class ClientMenu implements ServerMessageObserver {
 
 
     public void run(){
+        currentMode = UIMode.PRE_LOGIN;
 
-
-        Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("quit")) {
+        while (!"quit".equals(result)) {
+            System.out.println();
             System.out.println("Welcome to Chess! Select an option below: ");
             printPreLoginOptions();
             String line = scanner.nextLine();
@@ -99,7 +102,6 @@ public class ClientMenu implements ServerMessageObserver {
     }
 
     private String register(){
-        Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter your username: ");
         String username = scanner.nextLine();
@@ -120,7 +122,6 @@ public class ClientMenu implements ServerMessageObserver {
     }
 
     private String login(){
-        Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter your username: ");
         String username = scanner.nextLine();
@@ -143,12 +144,13 @@ public class ClientMenu implements ServerMessageObserver {
      */
 
     public void postLoginUI(String authToken){
+        currentMode = UIMode.POST_LOGIN;
         System.out.println("Log in success. Select an option below: ");
 
         String loggedIn = "Logged In";
         while (!loggedIn.equals("Logged out")){
+            System.out.println();
             printPostLoginOptions();
-            Scanner scanner = new Scanner(System.in);
 
             String line = scanner.nextLine();
             try {
@@ -212,12 +214,11 @@ public class ClientMenu implements ServerMessageObserver {
 
     private String observeGame(String authToken) {
         listGames(authToken);
-        Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter the game number you'd like to observe: ");
         int gameNumber = Integer.parseInt(scanner.nextLine());
         int gameID = gameIDMap.get(gameNumber);
-        teamColor = ChessGame.TeamColor.WHITE;
+        teamColor = null;
         facade.observeGame(authToken, gameID);
         gameplayUI(authToken, gameID);
 
@@ -226,7 +227,6 @@ public class ClientMenu implements ServerMessageObserver {
 
     private String playGame(String authToken) {
         listGames(authToken);
-        Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter the game number you'd like to join: ");
         int gameNumber = Integer.parseInt(scanner.nextLine());
@@ -240,9 +240,11 @@ public class ClientMenu implements ServerMessageObserver {
             teamColor = ChessGame.TeamColor.WHITE;
         }
 
-        facade.joinGame(new ConnectCommand(authToken, gameIDMap.get(gameNumber)), teamColor);
+        int gameID = gameIDMap.get(gameNumber);
 
-        gameplayUI(authToken, gameNumber);
+        facade.joinGame(new ConnectCommand(authToken, gameID), teamColor);
+
+        gameplayUI(authToken, gameID);
 
         return "";
     }
@@ -260,7 +262,6 @@ public class ClientMenu implements ServerMessageObserver {
     }
 
     private String createGame(String authToken) {
-        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Enter new game name: ");
         String gameName = scanner.nextLine();
@@ -277,20 +278,27 @@ public class ClientMenu implements ServerMessageObserver {
      */
 
     public void gameplayUI(String authToken, int gameID){
+        currentMode = UIMode.GAMEPLAY;
         boolean inProgress = true;
-        while (inProgress == true){
+
+        if (mostRecentGame != null) {
+            displayBoard(mostRecentGame.getBoard(), null);
+        } else {
+            System.out.println("Waiting for game to load...");
+        }
+
+        while (inProgress){
             printGameplayOptions();
-            Scanner scanner = new Scanner(System.in);
 
             String line = scanner.nextLine();
             try {
                 inProgress = evalGameplay(line, authToken, gameID);
-//                System.out.print(loggedIn);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
+        currentMode = UIMode.POST_LOGIN;
         System.out.println();
     }
 
@@ -349,7 +357,6 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.println("3: Knight");
         System.out.println("4: Rook");
 
-        Scanner scanner = new Scanner(System.in);
         int pieceType = scanner.nextInt();
         if (pieceType > 4 || pieceType < 0){
             System.out.println("Incorrect input, try again.");
@@ -378,7 +385,6 @@ public class ClientMenu implements ServerMessageObserver {
     private boolean highlightLegalMoves(String authToken, int gameID) {
         //takes in the position of the piece to check for
         System.out.println("Enter the location of the piece you would like to check (Example: a4): ");
-        Scanner scanner = new Scanner(System.in);
         String location = scanner.nextLine();
         //makes sure that there is a piece there and that it is for the right team potentially
         int row = translateRow(location);
@@ -448,12 +454,27 @@ public class ClientMenu implements ServerMessageObserver {
      * Client Messaging
      */
     @Override
-    public void notify(ServerMessage message) {
-//        System.out.println("Entering client notifier. Recieved: " + message);
+    public synchronized void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {
             case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
             case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
             case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+        }
+
+        System.out.println();
+        switch (currentMode) {
+            case PRE_LOGIN -> {
+                System.out.println("Welcome to Chess! Select an option below: ");
+                printPreLoginOptions();
+            }
+            case POST_LOGIN -> {
+                System.out.println("Select an option below: ");
+                printPostLoginOptions();
+            }
+            case GAMEPLAY -> {
+                System.out.println("Game command options: ");
+                printGameplayOptions();
+            }
         }
     }
 
@@ -476,7 +497,6 @@ public class ClientMenu implements ServerMessageObserver {
     }
 
     private ChessPosition getPositionFromInput(){
-        Scanner scanner = new Scanner(System.in);
         String location = scanner.nextLine();
         //makes sure that there is a piece there and that it is for the right team potentially
         int row = translateRow(location);

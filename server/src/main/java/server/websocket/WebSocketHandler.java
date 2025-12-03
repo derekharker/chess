@@ -23,8 +23,6 @@ import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
-import com.google.gson.Gson;
 
 
 import java.io.IOException;
@@ -36,9 +34,6 @@ public class WebSocketHandler {
     SQLAuthDAO authDAO;
     SQLGameDAO gameDAO;
     GameService gameService;
-    private static final String CHECKMESSAGE = "is in Check";
-    private static final String CHECKMATEMESSAGE = "is in Checkmate";
-    private static final String STALEMATEMESSAGE = "Game is in Stalemate";
 
     public WebSocketHandler(SQLUserDAO userDAO, SQLAuthDAO authDAO, SQLGameDAO gameDAO) {
         this.userDAO = userDAO;

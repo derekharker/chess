@@ -15,6 +15,9 @@ import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.ResignCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 import translatorclient.ClientTranslation;
 
@@ -40,11 +43,33 @@ public class WSCommunicator extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage notification = ClientTranslation.
-                            fromJsontoObjectNotRequest(message, ServerMessage.class);
-                    observer.notify(notification);
+                    try {
+                        ServerMessage base =
+                                ClientTranslation.fromJsontoObjectNotRequest(message, ServerMessage.class);
+
+                        ServerMessage fullMessage;
+                        switch (base.getServerMessageType()) {
+                            case LOAD_GAME -> fullMessage =
+                                    ClientTranslation.fromJsontoObjectNotRequest(message, LoadGameMessage.class);
+                            case ERROR -> fullMessage =
+                                    ClientTranslation.fromJsontoObjectNotRequest(message, ErrorMessage.class);
+                            case NOTIFICATION -> fullMessage =
+                                    ClientTranslation.fromJsontoObjectNotRequest(message, NotificationMessage.class);
+                            default -> {
+                                System.out.println("Unknown serverMessageType: " + base.getServerMessageType());
+                                return;
+                            }
+                        }
+
+                        observer.notify(fullMessage);
+
+                    } catch (Exception ex) {
+                        System.out.println("Error handling WS message: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
                 }
             });
+
         } catch (URISyntaxException | DeploymentException | IOException ex) {
             System.out.println("Error connecting to websocket. In WS Communicator: " + ex.getMessage());
         }

@@ -130,11 +130,15 @@ public class ClientMenu implements ServerMessageObserver {
         String password = scanner.nextLine();
 
         LoginResponse response =  facade.login(new LoginRequest(username, password));
-        if (response.authToken() != null){
+        if (response.authToken() != null) {
             postLoginUI(response.authToken());
             return "";
         } else {
-            return response.message();
+            String msg = response.message();
+            if (msg == null || msg.isBlank()) {
+                msg = "Invalid login";  // fallback
+            }
+            return msg + "\n";
         }
     }
 
@@ -281,15 +285,7 @@ public class ClientMenu implements ServerMessageObserver {
         currentMode = UIMode.GAMEPLAY;
         boolean inProgress = true;
 
-        if (mostRecentGame != null) {
-            displayBoard(mostRecentGame.getBoard(), null);
-        } else {
-            System.out.println("Waiting for game to load...");
-        }
-
         while (inProgress){
-            printGameplayOptions();
-
             String line = scanner.nextLine();
             try {
                 inProgress = evalGameplay(line, authToken, gameID);
@@ -386,10 +382,9 @@ public class ClientMenu implements ServerMessageObserver {
         //takes in the position of the piece to check for
         System.out.println("Enter the location of the piece you would like to check (Example: a4): ");
         String location = scanner.nextLine();
-        //makes sure that there is a piece there and that it is for the right team potentially
+
         int row = translateRow(location);
         int col =  ColumnTranslator.translateCol(location);
-//        System.out.println("Row = " + row + ". Col = " + col);
         if (row >= 9 || col >= 9){
             System.out.println("Invalid input");
             return highlightLegalMoves(authToken, gameID);

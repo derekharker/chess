@@ -188,11 +188,11 @@ public class BoardCreation {
     }
 
     private static void setDarkEndPosition(PrintStream out){
-        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_BG_COLOR_GREEN);
     }
 
     private static void setLightEndPosition(PrintStream out){
-        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_BG_COLOR_GREEN);
     }
 
     private void printPieceInfo(PrintStream out, int i, int j, ChessBoard board) {

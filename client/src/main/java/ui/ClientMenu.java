@@ -347,9 +347,19 @@ public class ClientMenu implements ServerMessageObserver {
     }
 
     private boolean resign(String authToken, int gameID) {
-        facade.resignGame(new ResignCommand(authToken, gameID));
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Are you sure you want to resign? Enter y for yes and n for no: ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+
+        if (answer.equals("y")) {
+            facade.resignGame(new ResignCommand(authToken, gameID));
+            System.out.println("You have resigned the game.");
+        } else {
+            System.out.println("Resign cancelled.");
+        }
         return true;
     }
+
 
     private boolean highlightLegalMoves(String authToken, int gameID) {
         //takes in the position of the piece to check for
@@ -398,7 +408,10 @@ public class ClientMenu implements ServerMessageObserver {
 
     private void displayBoard(ChessBoard board, Collection<ChessMove> validMoves){
         BoardCreation boardCreator = new BoardCreation();
-        boardCreator.createBoard(teamColor, board, validMoves);
+        ChessGame.TeamColor perspective =
+                (teamColor != null) ? teamColor : ChessGame.TeamColor.WHITE;
+        boardCreator.createBoard(perspective, board, validMoves);
+        printGameplayOptions();
     }
 
     private int translateRow(String location){
@@ -416,9 +429,15 @@ public class ClientMenu implements ServerMessageObserver {
     @Override
     public synchronized void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case NOTIFICATION -> {
+                displayNotification(((NotificationMessage) message).getMessage());
+//                printGameplayOptions();
+            }
             case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
-            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+            case LOAD_GAME -> {
+                loadGame(((LoadGameMessage) message).getGame());
+//                printGameplayOptions();
+            }
         }
 
         System.out.println();
@@ -430,10 +449,6 @@ public class ClientMenu implements ServerMessageObserver {
             case POST_LOGIN -> {
                 System.out.println("Select an option below: ");
                 printPostLoginOptions();
-            }
-            case GAMEPLAY -> {
-                System.out.println("Game command options: ");
-                printGameplayOptions();
             }
         }
     }

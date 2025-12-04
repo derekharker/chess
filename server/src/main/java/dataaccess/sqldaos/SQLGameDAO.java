@@ -19,10 +19,9 @@ import chess.ChessGame;
 import static dataaccess.DatabaseManager.executeUpdate;
 
 public class SQLGameDAO implements GameDAO {
-    private int initialGameDAO;
 
     public SQLGameDAO() {
-        initialGameDAO = 1;
+
     }
 
     @Override
@@ -173,22 +172,17 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public int createGame(String gameName) {
-        var st = "INSERT INTO game (game_id, game_name, game_info) VALUES (?, ?, ?)";
-        int gameID = createGameID();
+        // Auto increment
+        var st = "INSERT INTO game (game_name, game_info) VALUES (?, ?)";
         String gameString = (String) Translation.fromObjectToJson(new ChessGame());
 
         try {
-            executeUpdate(st, gameID, gameName, gameString);
+            int gameID = DatabaseManager.executeUpdate(st, gameName, gameString);
             return gameID;
         } catch (DataAccessException ex) {
             System.out.println("Error in createGame: " + ex.getMessage());
             return 0;
         }
-    }
-
-    @Override
-    public int createGameID(){
-        return initialGameDAO++;
     }
 
     @Override

@@ -75,7 +75,7 @@ public class DatabaseManager {
     private static final String[] CREATEGAMETABLE = {
             """
     CREATE TABLE IF NOT EXISTS `game` (
-    `game_id` INT NOT NULL PRIMARY KEY,
+    `game_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `game_name` VARCHAR(255) NOT NULL,
     `white_username` VARCHAR(256),
     `black_username` VARCHAR(256),

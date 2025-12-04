@@ -26,35 +26,31 @@ public class HTTPCommunicator {
     }
 
     public String doGet(String url, String authToken) throws IOException {
-        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "GET", false); //Maybe change this ...?
+        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "GET", false);
         return getResponseBody(conn);
     }
 
     private String getResponseBody(HttpURLConnection conn) throws IOException {
-        if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            try (InputStream responseBody = conn.getInputStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(
-                         responseBody, "utf-8"))) {
+        InputStream stream = (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                ? conn.getInputStream()
+                : conn.getErrorStream();
 
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line.trim());
-                    }
-                return response.toString();
-            }
-        } else try (InputStream responseBody = conn.getErrorStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(
-                            responseBody, "utf-8")))    {
+        if (stream == null) {
+            return "";
+        }
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, "utf-8"))) {
 
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                response.append(line.trim());
+                response.append(line);
             }
             return response.toString();
         }
     }
+
 
     private void sendRequest(HttpURLConnection conn, String body) {
         try (OutputStream stream = conn.getOutputStream();) {

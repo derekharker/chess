@@ -7,7 +7,7 @@ import typehandler.CommandTypeAdapter;
 import websocket.commands.UserGameCommand;
 
 public class Translation {
-    private static Gson GSON = prepareGson();
+    private final static Gson GSON = prepareGson();
 
     public static <T> T fromJsonToObject(Context ctx, Class<T> classOfT) {
         return GSON.fromJson(ctx.body(), classOfT);

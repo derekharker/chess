@@ -50,38 +50,38 @@ public class ClientCommunication {
     }
 
     private String getResponseBody(HttpURLConnection connection) throws IOException {
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            try (InputStream responseBody = connection.getInputStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line.trim());
-                }
-                return response.toString();
-            }
-        } else {
-            try (InputStream responseBody = connection.getErrorStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody, "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line.trim());
-                }
-                // Process the error response
-                if (response.toString().contains("already taken")) {
-                    System.err.println("Already Taken");
-                    System.out.println();
-                }
-                if (response.toString().contains("unauthorized")) {
-                    System.err.println("Unauthorized");
-                    System.out.println();
-                }
+        InputStream stream = connection.getResponseCode() == HttpURLConnection.HTTP_OK
+                ? connection.getInputStream()
+                : connection.getErrorStream();
 
-                return response.toString();
+        if (stream == null) {
+            return "";
+        }
+
+        StringBuilder response = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, "utf-8"))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line.trim());
             }
         }
+
+        // error checks
+        if (response.toString().contains("already taken")) {
+            System.err.println("Already Taken");
+            System.out.println();
+        }
+        if (response.toString().contains("unauthorized")) {
+            System.err.println("Unauthorized");
+            System.out.println();
+        }
+
+        return response.toString();
     }
+
 
     private void sendRequest(HttpURLConnection connection, String body){
         try (OutputStream requestBody = connection.getOutputStream();) {

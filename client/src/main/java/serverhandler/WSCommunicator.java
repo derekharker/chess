@@ -32,46 +32,60 @@ public class WSCommunicator extends Endpoint {
     ServerMessageObserver observer;
 
     public WSCommunicator(String url, ServerMessageObserver observer) {
+        this.url = url.replace("http", "ws");
+
+        this.observer = observer;
+
         try {
-            this.url = url.replace("http", "ws");
-            URI socketURI = new URI(this.url + "/ws");
-            this.observer = observer;
-
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            this.session = container.connectToServer(this, socketURI);
-
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    try {
-                        ServerMessage base =
-                                ClientTranslation.fromJsontoObjectNotRequest(message, ServerMessage.class);
-
-                        ServerMessage fullMessage;
-                        switch (base.getServerMessageType()) {
-                            case LOAD_GAME -> fullMessage =
-                                    ClientTranslation.fromJsontoObjectNotRequest(message, LoadGameMessage.class);
-                            case ERROR -> fullMessage =
-                                    ClientTranslation.fromJsontoObjectNotRequest(message, ErrorMessage.class);
-                            case NOTIFICATION -> fullMessage =
-                                    ClientTranslation.fromJsontoObjectNotRequest(message, NotificationMessage.class);
-                            default -> {
-                                System.out.println("Unknown serverMessageType: " + base.getServerMessageType());
-                                return;
-                            }
-                        }
-
-                        observer.notify(fullMessage);
-
-                    } catch (Exception ex) {
-                        System.out.println("Error handling WS message: " + ex.getMessage());
-                        ex.printStackTrace();
-                    }
-                }
-            });
-
+            initWebSocket();
         } catch (URISyntaxException | DeploymentException | IOException ex) {
             System.out.println("Error connecting to websocket. In WS Communicator: " + ex.getMessage());
+        }
+    }
+
+    private void initWebSocket() throws URISyntaxException, DeploymentException, IOException {
+        URI socketURI = new URI(this.url + "/ws");
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        this.session = container.connectToServer(this, socketURI);
+
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            @Override
+            public void onMessage(String message) {
+                handleIncomingMessage(message);
+            }
+        });
+    }
+
+    private void handleIncomingMessage(String message) {
+        try {
+            ServerMessage base =
+                    ClientTranslation.fromJsontoObjectNotRequest(message, ServerMessage.class);
+
+            ServerMessage fullMessage = createTypedMessage(base, message);
+            if (fullMessage == null) {
+                // Unknown type already logged in createTypedMessage
+                return;
+            }
+
+            observer.notify(fullMessage);
+
+        } catch (Exception ex) {
+            System.out.println("Error handling WS message: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    private ServerMessage createTypedMessage(ServerMessage base, String rawJson) {
+        switch (base.getServerMessageType()) {
+            case LOAD_GAME:
+                return ClientTranslation.fromJsontoObjectNotRequest(rawJson, LoadGameMessage.class);
+            case ERROR:
+                return ClientTranslation.fromJsontoObjectNotRequest(rawJson, ErrorMessage.class);
+            case NOTIFICATION:
+                return ClientTranslation.fromJsontoObjectNotRequest(rawJson, NotificationMessage.class);
+            default:
+                System.out.println("Unknown serverMessageType: " + base.getServerMessageType());
+                return null;
         }
     }
     public void connect(ConnectCommand command) {

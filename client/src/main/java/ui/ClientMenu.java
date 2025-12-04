@@ -35,15 +35,8 @@ public class ClientMenu implements ServerMessageObserver {
 
     public ClientMenu(int port) {
         facade = new ServerFacade(port, this);
-        gameIDMap = new HashMap<>(); //key is temporary game int, value is primary key of table
-
-
+        gameIDMap = new HashMap<>(); //key is temporary game i
     }
-
-    /**
-     * Pre Login UI
-     */
-
 
     public void run(){
         currentMode = UIMode.PRE_LOGIN;
@@ -66,8 +59,6 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.println();
     }
 
-
-
     private void printPreLoginOptions(){
         System.out.println("1: Help");
         System.out.println("2: Quit");
@@ -89,10 +80,6 @@ public class ClientMenu implements ServerMessageObserver {
             return ex.getMessage();
         }
     }
-
-    /**
-     * Pre login methods
-     */
 
     private String preLoginHelp(){
         return "Enter 1 to see help options" + "\n" +
@@ -142,11 +129,6 @@ public class ClientMenu implements ServerMessageObserver {
         }
     }
 
-
-    /**
-     * Post login UI
-     */
-
     public void postLoginUI(String authToken){
         currentMode = UIMode.POST_LOGIN;
         System.out.println("Log in success. Select an option below: ");
@@ -187,10 +169,6 @@ public class ClientMenu implements ServerMessageObserver {
             return ex.getMessage();
         }
     }
-
-    /**
-     * Post login methods
-     */
 
     private void printPostLoginOptions() {
         System.out.println("1: Help");
@@ -235,7 +213,8 @@ public class ClientMenu implements ServerMessageObserver {
         System.out.print("Enter the game number you'd like to join: ");
         int gameNumber = Integer.parseInt(scanner.nextLine());
 
-        System.out.print("Enter the color you'd like to join as, select w for white or b for black. If you don't select either, white will be selected: ");
+        System.out.print("Enter the color you'd like to join as, select w for white or " +
+                "b for black. If you don't select either, white will be selected: ");
         String color = scanner.nextLine();
         if (color.equals("b")){
             teamColor = ChessGame.TeamColor.BLACK;
@@ -258,7 +237,8 @@ public class ClientMenu implements ServerMessageObserver {
 
         int gameNumber = 1;
         for (GameData game : listGamesResponse.games()){
-            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() + ", White Username: " + game.getWhiteUsername() + ", Black Username: " + game.getBlackUsername());
+            System.out.println("Game Number: " + gameNumber + ", Game Name: " + game.getGameName() + ", " +
+                    "White Username: " + game.getWhiteUsername() + ", Black Username: " + game.getBlackUsername());
             gameIDMap.put(gameNumber, game.getGameID());
             gameNumber ++;
         }
@@ -275,11 +255,6 @@ public class ClientMenu implements ServerMessageObserver {
 
         return "";
     }
-
-
-    /**
-     * Gameplay UI
-     */
 
     public void gameplayUI(String authToken, int gameID){
         currentMode = UIMode.GAMEPLAY;
@@ -337,10 +312,8 @@ public class ClientMenu implements ServerMessageObserver {
         ChessPosition startPosition = getPositionFromInput();
         System.out.println("Enter the location you would like to move to (Ex: a5): ");
         ChessPosition endPosition = getPositionFromInput();
-
         ChessPiece.PieceType promotionPieceType = promotionOptions();
         ChessMove newMove = new ChessMove(startPosition, endPosition, promotionPieceType);
-
         facade.makeMoveInGame(new MakeMoveCommand(authToken, gameID, newMove));
         return true;
     }
@@ -399,9 +372,7 @@ public class ClientMenu implements ServerMessageObserver {
             System.out.println("There are no valid moves");
             return true;
         }
-
         displayBoard(game.getBoard(), chessMoves);
-
         return true;
     }
 
@@ -425,18 +396,14 @@ public class ClientMenu implements ServerMessageObserver {
         return true;
     }
 
-
-    /**
-     * Helper functions
-     */
-
     private void displayBoard(ChessBoard board, Collection<ChessMove> validMoves){
         BoardCreation boardCreator = new BoardCreation();
         boardCreator.createBoard(teamColor, board, validMoves);
     }
 
     private int translateRow(String location){
-        if (location.length() == 2 && Character.isLetter(location.charAt(0)) && Character.isDigit(location.charAt(1))) {
+        if (location.length() == 2 && Character.isLetter(location.charAt(0)) &&
+                Character.isDigit(location.charAt(1))) {
             // Get the second character and convert it to an integer
             char numberChar = location.charAt(1);
             return Character.getNumericValue(numberChar);
@@ -445,9 +412,7 @@ public class ClientMenu implements ServerMessageObserver {
         }
     }
 
-    /**
-     * Client Messaging
-     */
+
     @Override
     public synchronized void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {

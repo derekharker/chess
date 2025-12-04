@@ -1,59 +1,39 @@
 package serverhandler;
 
 import java.io.*;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.Buffer;
 
 public class HTTPCommunicator {
 
     public String doPost(String url, String body, String authToken) throws IOException {
-        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "POST", true);
+        HttpURLConnection conn = getHttpURLConnection(url, authToken, "POST", true);
         sendRequest(conn, body);
         return getResponseBody(conn);
     }
 
     public String doPut(String url, String body, String authToken) throws IOException {
-        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "PUT", true);
+        HttpURLConnection conn = getHttpURLConnection(url, authToken, "PUT", true);
         sendRequest(conn, body);
         return getResponseBody(conn);
     }
 
     public String doDelete(String url, String authToken) throws IOException {
-        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "DELETE", true);
+        HttpURLConnection conn = getHttpURLConnection(url, authToken, "DELETE", true);
         return getResponseBody(conn);
     }
 
     public String doGet(String url, String authToken) throws IOException {
-        HttpURLConnection conn =  getHttpURLConnection(url, authToken, "GET", false);
+        HttpURLConnection conn = getHttpURLConnection(url, authToken, "GET", false);
         return getResponseBody(conn);
     }
 
     private String getResponseBody(HttpURLConnection conn) throws IOException {
-        InputStream stream = (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                ? conn.getInputStream()
-                : conn.getErrorStream();
-
-        if (stream == null) {
-            return "";
-        }
-
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(stream, "utf-8"))) {
-
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
-        }
+        return HttpResponseReader.readBody(conn, false); // no trimming, just raw body
     }
 
-
     private void sendRequest(HttpURLConnection conn, String body) {
-        try (OutputStream stream = conn.getOutputStream();) {
+        try (OutputStream stream = conn.getOutputStream()) {
             byte[] input = body.getBytes("utf-8");
             stream.write(input, 0, input.length);
         } catch (IOException ex) {
@@ -61,7 +41,8 @@ public class HTTPCommunicator {
         }
     }
 
-    private static HttpURLConnection getHttpURLConnection(String url, String authToken, String reqMethod, boolean out)
+    private static HttpURLConnection getHttpURLConnection(String url, String authToken,
+                                                          String reqMethod, boolean out)
             throws IOException {
         URL newUrl = new URL(url);
         HttpURLConnection conn = (HttpURLConnection) newUrl.openConnection();
@@ -73,7 +54,6 @@ public class HTTPCommunicator {
         conn.setRequestProperty("Content-Type", "application/json; utf-8");
         conn.setRequestProperty("Accept", "application/json");
 
-        // Add an authToken if valid
         if (authToken != null) {
             conn.addRequestProperty("Authorization", authToken);
         }
@@ -81,6 +61,4 @@ public class HTTPCommunicator {
         conn.connect();
         return conn;
     }
-
-
 }

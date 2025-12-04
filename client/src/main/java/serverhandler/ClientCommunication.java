@@ -5,7 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ClientCommunication {
-    public String doPost(String urlString, String body, String authToken) throws IOException, IOException {
+
+    public String doPost(String urlString, String body, String authToken) throws IOException {
         HttpURLConnection connection = getHttpURLConnection(urlString, authToken, "POST", true);
         sendRequest(connection, body);
         return getResponseBody(connection);
@@ -33,7 +34,7 @@ public class ClientCommunication {
         return connection;
     }
 
-    public String doPut(String urlString, String body, String authToken) throws IOException, IOException {
+    public String doPut(String urlString, String body, String authToken) throws IOException {
         HttpURLConnection connection = getHttpURLConnection(urlString, authToken, "PUT", true);
         sendRequest(connection, body);
         return getResponseBody(connection);
@@ -49,42 +50,23 @@ public class ClientCommunication {
         return getResponseBody(connection);
     }
 
-    private String getResponseBody(HttpURLConnection connection) throws IOException {
-        InputStream stream = connection.getResponseCode() == HttpURLConnection.HTTP_OK
-                ? connection.getInputStream()
-                : connection.getErrorStream();
+    public String getResponseBody(HttpURLConnection connection) throws IOException {
+        String response = HttpResponseReader.readBody(connection, true); // trim lines
 
-        if (stream == null) {
-            return "";
-        }
-
-        StringBuilder response = new StringBuilder();
-
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(stream, "utf-8"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line.trim());
-            }
-        }
-
-        // error checks
-        if (response.toString().contains("already taken")) {
+        if (response.contains("already taken")) {
             System.err.println("Already Taken");
             System.out.println();
         }
-        if (response.toString().contains("unauthorized")) {
+        if (response.contains("unauthorized")) {
             System.err.println("Unauthorized");
             System.out.println();
         }
 
-        return response.toString();
+        return response;
     }
 
-
-    private void sendRequest(HttpURLConnection connection, String body){
-        try (OutputStream requestBody = connection.getOutputStream();) {
+    private void sendRequest(HttpURLConnection connection, String body) {
+        try (OutputStream requestBody = connection.getOutputStream()) {
             byte[] input = body.getBytes("utf-8");
             requestBody.write(input, 0, input.length);
         } catch (IOException e) {

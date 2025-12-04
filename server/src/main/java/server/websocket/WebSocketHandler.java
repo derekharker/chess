@@ -52,8 +52,10 @@ public class WebSocketHandler {
 
             if (username == null) {
                 // Invalid auth: send ERROR back and bail
-                session.getRemote().sendString(Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
-                System.out.println("Bad auth token in onMesage WSHandler " + Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
+                session.getRemote().sendString(Translation.fromObjectToJson(new
+                        ErrorMessage("Invalid authToken.")).toString());
+                System.out.println("Bad auth token in onMesage WSHandler " +
+                        Translation.fromObjectToJson(new ErrorMessage("Invalid authToken.")).toString());
                 return;
             }
 
@@ -72,10 +74,13 @@ public class WebSocketHandler {
     }
 
     private void connect(Session session, String username, ConnectCommand command) {
-        System.out.println("(Connect wsHandler: The server thinks that this person is a " + typeOfPlayer(command.getGameID(), username));
-        String messageToOthers = String.format("%s has joined the game as %s", username, typeOfPlayer(command.getGameID(), username));
+        System.out.println("(Connect wsHandler: The server thinks that this person is a " +
+                typeOfPlayer(command.getGameID(), username));
+        String messageToOthers = String.format("%s has joined the game as %s", username,
+                typeOfPlayer(command.getGameID(), username));
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
-        GetGameResponse response = gameService.returnGame(new GetGameRequest(command.getAuthToken(), command.getGameID()));
+        GetGameResponse response = gameService.returnGame(new GetGameRequest(command.getAuthToken(),
+                command.getGameID()));
 
 
         LoadGameMessage loadGameMessage = new LoadGameMessage(response.game());
@@ -208,7 +213,8 @@ public class WebSocketHandler {
 
         String messageToOthers = String.format("%s has resigned the game", username);
         NotificationMessage notificationToOthers = new NotificationMessage(messageToOthers);
-        LeaveGameResponse response = gameService.resignGame(new ResignGameRequest(command.getAuthToken(), command.getGameID()));
+        LeaveGameResponse response = gameService.resignGame(new ResignGameRequest(command.getAuthToken(),
+                command.getGameID()));
 
         try {
             if (response.message() != null){

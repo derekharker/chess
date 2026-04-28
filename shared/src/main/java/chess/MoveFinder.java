@@ -67,6 +67,9 @@ public class MoveFinder {
     }
 
     private void moveDirSingle(int rowDirection, int colDirection) {
+        int tempRow = this.pos.getRow();
+        int tempCol = this.pos.getColumn();
+
 
     }
 

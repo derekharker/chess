@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -8,6 +11,7 @@ package chess;
  */
 public class ChessBoard {
 
+    private ChessPiece[][] board = new ChessPiece[8][8];
     public ChessBoard() {
         
     }
@@ -19,7 +23,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        board[position.getRow()-1][position.getColumn()-1] = piece;
     }
 
     /**
@@ -30,7 +34,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        return board[position.getRow()-1][position.getColumn()-1];
     }
 
     /**
@@ -38,6 +42,60 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        clearBoard();
+        addAllPawns();
+        addPieceBoard(ChessPiece.PieceType.BISHOP, 2, 5);
+        addPieceBoard(ChessPiece.PieceType.KING, 4, 0);
+        addPieceBoard(ChessPiece.PieceType.QUEEN, 3, 0);
+        addPieceBoard(ChessPiece.PieceType.ROOK, 0, 7);
+        addPieceBoard(ChessPiece.PieceType.KNIGHT, 1, 6);
+    }
+
+    private void clearBoard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = null;
+            }
+        }
+    }
+
+    private void addAllPawns() {
+        for (int col = 0; col < 8; col++) {
+            board[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+            board[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
+    }
+
+    private void addPieceBoard(ChessPiece.PieceType type, int col1, int col2) {
+        if (type == ChessPiece.PieceType.KING || type == ChessPiece.PieceType.QUEEN) {
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+        } else {
+            board[7][col1] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[7][col2] = new ChessPiece(ChessGame.TeamColor.BLACK, type);
+            board[0][col1] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+            board[0][col2] = new ChessPiece(ChessGame.TeamColor.WHITE, type);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.toString(board) +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
     }
 }

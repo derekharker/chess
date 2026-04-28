@@ -82,8 +82,22 @@ public class MoveFinder {
                     ChessMove newMove = new ChessMove(pos, newPos, null);
                     moves.add(newMove);
                     if (doubleMove) {
-                        ChessPosition doublePos = new ChessPosition(row, col);
+                        ChessPosition doublePos = new ChessPosition(newRowPos + rowMove, newColPos);
+                        ChessPiece testPiece = board.getPiece(doublePos);
+                        if (testPiece == null) {
+                            ChessMove newDoubleMove = new ChessMove(pos, doublePos, null);
+                            moves.add(newDoubleMove);
+                        }
                     }
+                }
+            }
+        } else {
+            if (newPiece != null && newPiece.getTeamColor() != teamColor) {
+                if (promotion) {
+                    promotePawn(newPos);
+                } else {
+                    ChessMove newMove = new ChessMove(pos, newPos, null);
+                    moves.add(newMove);
                 }
             }
         }

@@ -82,7 +82,7 @@ public class MoveFinder {
                     ChessMove newMove = new ChessMove(pos, newPos, null);
                     moves.add(newMove);
                     if (doubleMove) {
-                        ChessPosition doublePos
+                        ChessPosition doublePos =
                     }
                 }
             }

@@ -70,8 +70,25 @@ public class MoveFinder {
         int tempRow = this.pos.getRow();
         int tempCol = this.pos.getColumn();
 
+        tempRow += (rowDirection);
+        tempCol += (colDirection);
 
+        if (! inbounds(tempRow, tempCol)) return;
+
+        ChessPosition tempPosition = new ChessPosition(tempRow, tempCol);
+
+        if (board.getPiece(tempPosition) == null) {
+            moves.add(new ChessMove(pos, tempPosition, null));
+        } else if (board.getPiece(tempPosition).getTeamColor() != teamColor) {
+            moves.add(new ChessMove(pos, tempPosition, null));
+        } else {return;}
     }
+
+    public boolean inbounds(int row, int col) {
+        return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+    }
+
+
 
 
 }

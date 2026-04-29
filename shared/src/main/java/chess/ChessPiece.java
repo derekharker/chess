@@ -59,7 +59,7 @@ public class ChessPiece {
             MoveFinder moveFinder = new MoveFinder(board, myPosition, pieceColor, validMoves, type);
             moveFinder.pieceLogic();
         } else {
-            PawnMoveFinder pawnMoveFinder = new PawnMoveFinder(board, myPosition, pieceColor, validMoves);
+            PawnMoveFinder pawnMoveFinder = new PawnMoveFinder(board, myPosition, validMoves, pieceColor);
             pawnMoveFinder.calculateMoves();
         }
         return validMoves;

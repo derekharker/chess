@@ -20,49 +20,50 @@ public class MoveFinder {
     }
 
     public void pieceLogic() {
-        switch(pieceType) {
-            case KING:
-                moveDirSingle(1,0);
-                moveDirSingle(1,1);
-                moveDirSingle(1,-1);
-                moveDirSingle(-1,1);
-                moveDirSingle(-1,0);
-                moveDirSingle(-1,-1);
-                moveDirSingle(0,1);
-                moveDirSingle(0,-1);
-                break;
-            case QUEEN:
-                moveDirMultiple(1,1);
-                moveDirMultiple(1,-1);
-                moveDirMultiple(1,0);
-                moveDirMultiple(-1,1);
-                moveDirMultiple(-1,0);
-                moveDirMultiple(-1,-1);
-                moveDirMultiple(0,1);
-                moveDirMultiple(0,-1);
-                break;
-            case KNIGHT:
-                moveDirSingle(2,1);
-                moveDirSingle(-2,1);
-                moveDirSingle(2,-1);
-                moveDirSingle(-2,-1);
-                moveDirSingle(1,2);
-                moveDirSingle(1,-2);
-                moveDirSingle(-1,2);
-                moveDirSingle(-1,-2);
-                break;
-            case ROOK:
-                moveDirMultiple(1,0);
-                moveDirMultiple(-1,0);
-                moveDirMultiple(0,1);
-                moveDirMultiple(0,-1);
-                break;
-            case BISHOP:
-                moveDirMultiple(1,1);
-                moveDirMultiple(1,-1);
-                moveDirMultiple(-1,1);
-                moveDirMultiple(-1,-1);
-                break;
+        int[][] directions;
+        boolean repeat;
+
+        switch (pieceType) {
+            case KING -> {
+                directions = new int[][]{
+                        {1,0},{1,1},{1,-1},{-1,1},{-1,0},{-1,-1},{0,1},{0,-1}
+                };
+                repeat = false;
+            }
+            case QUEEN -> {
+                directions = new int[][]{
+                        {1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}
+                };
+                repeat = true;
+            }
+            case ROOK -> {
+                directions = new int[][]{
+                        {1,0},{-1,0},{0,1},{0,-1}
+                };
+                repeat = true;
+            }
+            case BISHOP -> {
+                directions = new int[][]{
+                        {1,1},{1,-1},{-1,1},{-1,-1}
+                };
+                repeat = true;
+            }
+            case KNIGHT -> {
+                directions = new int[][]{
+                        {2,1},{-2,1},{2,-1},{-2,-1},
+                        {1,2},{1,-2},{-1,2},{-1,-2}
+                };
+                repeat = false;
+            }
+            default -> { return; }
+        }
+
+        for (int[] d : directions) {
+            if (repeat) {
+                moveDirMultiple(d[0], d[1]);
+            } else {
+                moveDirSingle(d[0], d[1]);
+            }
         }
     }
 

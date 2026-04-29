@@ -88,7 +88,29 @@ public class MoveFinder {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 
+    private void moveDirMultiple(int rowDirection, int colDirection) {
+        int tempRow = this.pos.getRow();
+        int tempCol = this.pos.getColumn();
 
+        while (inbounds(tempRow, tempCol)) {
+            tempRow += (rowDirection);
+            tempCol += (colDirection);
+
+            if (! inbounds(tempRow, tempCol)) {
+                break;
+            }
+
+            ChessPosition tempPosition = new ChessPosition(tempRow, tempCol);
+
+            if (board.getPiece(tempPosition) == null) {
+                moves.add(new ChessMove(pos, tempPosition, null));
+            } else if (board.getPiece(tempPosition).getTeamColor() != teamColor) {
+                moves.add(new ChessMove(pos, tempPosition, null));
+                break;
+            } else {break;}
+
+        }
+    }
 
 
 }

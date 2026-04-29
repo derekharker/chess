@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class ChessBoard {
 
+    //Because of the borders as well
     private final ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {}

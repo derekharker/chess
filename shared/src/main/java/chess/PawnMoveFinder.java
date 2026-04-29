@@ -43,11 +43,15 @@ public class PawnMoveFinder {
     private void handleForward(int forward, int startRow, int promoRow) {
         int nextRow = row + forward;
 
-        if (!inBounds(nextRow, col)) return;
+        if (!inBounds(nextRow, col)) {
+            return;
+        }
 
         ChessPosition oneStep = new ChessPosition(nextRow, col);
 
-        if (board.getPiece(oneStep) != null) return;
+        if (board.getPiece(oneStep) != null) {
+            return;
+        }
 
         if (row == promoRow) {
             addPromotions(oneStep);
@@ -73,12 +77,16 @@ public class PawnMoveFinder {
             int newRow = row + forward;
             int newCol = col + dc;
 
-            if (!inBounds(newRow, newCol)) continue;
+            if (!inBounds(newRow, newCol)) {
+                continue;
+            }
 
             ChessPosition target = new ChessPosition(newRow, newCol);
             ChessPiece piece = board.getPiece(target);
 
-            if (piece == null || piece.getTeamColor() == teamColor) continue;
+            if (piece == null || piece.getTeamColor() == teamColor) {
+                continue;
+            }
 
             if (row == promoRow) {
                 addPromotions(target);

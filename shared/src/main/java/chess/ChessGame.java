@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A class that can manage a chess game, making moves on a board
@@ -10,15 +11,20 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    private TeamColor teamTurn;
+    private ChessBoard board;
 
+    public ChessGame() {
+        teamTurn = TeamColor.WHITE;
+        board = new ChessBoard();
+        board.resetBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +33,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -38,6 +44,21 @@ public class ChessGame {
         BLACK
     }
 
+    public ChessBoard copy() {
+        ChessBoard out = new ChessBoard();
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition p = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(p);
+                if (piece != null) {
+                    out.addPiece(p, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                }
+            }
+        }
+        return out;
+    }
+
     /**
      * Gets all valid moves for a piece at the given location
      *
@@ -46,7 +67,24 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> validMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        ChessGame.TeamColor teamColor = board.getPiece(startPosition).getTeamColor();
+
+        Iterator<ChessMove> iterator = validMoves.iterator();
+        for (; iterator.hasNext(); ) {
+            ChessMove move = iterator.next();
+            ChessBoard clone = this.copy();
+            try {
+                performMove(move, clone); // implement
+                if (checkHelp(teamColor, clone)) {
+                    iterator.remove();
+                }
+            } catch(InvalidMoveException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return validMoves;
     }
 
     /**
@@ -56,7 +94,13 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        if (!moveChecks(move)) {return;}
+        performMove(move, board);
+        try {
+            endCurrentTurn();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

@@ -28,12 +28,6 @@ public class ChessGame {
     public TeamColor getTeamTurn() {
         return teamTurn;
     }
-
-    /**
-     * Sets which teams turn it is
-     *
-     * @param team the team whose turn it is
-     */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
     }
@@ -124,12 +118,6 @@ public class ChessGame {
         return moves;
     }
 
-    /**
-     * Makes a move in the chess game
-     *
-     * @param move chess move to perform
-     * @throws InvalidMoveException if move is invalid
-     */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         if (!moveChecks(move)) {return;}
         performMove(move, board);

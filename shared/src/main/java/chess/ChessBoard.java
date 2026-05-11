@@ -37,6 +37,10 @@ public class ChessBoard {
         placeRow(6, ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
     }
 
+    public void removePiece(ChessPosition position) {
+        board[position.getRow()-1][position.getColumn()-1] = null;
+    }
+
     private void wipeBoaard() {
         for (ChessPiece[] row : board) {
             Arrays.fill(row, null);

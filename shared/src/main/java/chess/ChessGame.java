@@ -140,6 +140,21 @@ public class ChessGame {
         }
     }
 
+    private void performMove(ChessMove move, ChessBoard board) throws InvalidMoveException {
+
+        ChessPiece.PieceType pieceType;
+        ChessGame.TeamColor teamColor = board.getPiece(move.getStartPosition()).getTeamColor();
+
+        if (move.getPromotionPiece() == null) {
+            pieceType = board.getPiece(move.getStartPosition()).getPieceType();
+        } else {
+            pieceType = move.getPromotionPiece();
+        }
+
+        board.removePiece(move.getStartPosition());
+        board.addPiece(move.getEndPosition(), new ChessPiece(teamColor, pieceType));
+    }
+
     private void endCurrentTurn() throws CloneNotSupportedException {
         if (getTeamTurn() == ChessGame.TeamColor.WHITE) {
             setTeamTurn(ChessGame.TeamColor.BLACK);

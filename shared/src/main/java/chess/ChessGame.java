@@ -173,6 +173,38 @@ public class ChessGame {
         return checkHelp(teamColor, this.board);
     }
 
+    private boolean checkHelp(ChessGame.TeamColor teamColor, ChessBoard board) {
+        ChessPosition kingP = getKingP(teamColor, board);
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition tryP = new ChessPosition(row, col);
+                ChessPiece curr = board.getPiece(tryP);
+                if (curr != null && curr.getTeamColor() != teamColor) {
+                    Collection<ChessMove> enemyMoves = curr.pieceMoves(board, tryP);
+                    for (ChessMove enemyMove : enemyMoves) {
+                        if (enemyMove.getEndPosition().equals(kingP)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private ChessPosition getKingP(ChessGame.TeamColor teamColor, ChessBoard board) {
+        ChessPiece tempK = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition kingP = new ChessPosition(i, j);
+                if (board.getPiece(kingP) != null && board.getPiece(kingP).equals(tempK)) {
+                    return kingP;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Determines if the given team is in checkmate
      *

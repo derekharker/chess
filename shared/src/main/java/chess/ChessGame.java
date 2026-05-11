@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -88,6 +89,24 @@ public class ChessGame {
         return validMoves;
     }
 
+    private Collection<ChessMove> findValidMoves(ChessGame.TeamColor teamColor) {
+        Collection<ChessMove> moves = new ArrayList<>();
+        //Temporary positions and pieces to try and find all valid moves
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> tmp = validMoves(pos);
+                    for (ChessMove move : tmp) {
+                        moves.add(move);
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
     /**
      * Makes a move in the chess game
      *
@@ -101,6 +120,14 @@ public class ChessGame {
             endCurrentTurn();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void endCurrentTurn() throws CloneNotSupportedException {
+        if (getTeamTurn() == ChessGame.TeamColor.WHITE) {
+            setTeamTurn(ChessGame.TeamColor.BLACK);
+        } else {
+            setTeamTurn(ChessGame.TeamColor.WHITE);
         }
     }
 

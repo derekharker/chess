@@ -110,7 +110,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return checkHelp(teamColor, this.board);
     }
 
     /**
@@ -120,7 +120,14 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {
+            Collection<ChessMove> allFriendly = findValidMoves(teamColor);
+            if (allFriendly.size() > 0) {
+                return false;
+            } else {
+                return true;
+            }
+        } else { return false;}
     }
 
     /**

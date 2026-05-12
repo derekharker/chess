@@ -34,21 +34,16 @@ public class ChessGame {
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
         validateMove(move);
-
         applyMove(board, move);
-
         currentTurn = opposite(currentTurn);
     }
 
     public Collection<ChessMove> validMoves(ChessPosition start) {
         ChessPiece piece = board.getPiece(start);
-
         if (piece == null) {
             return null;
         }
-
         Collection<ChessMove> legal = new ArrayList<>();
-
         for (ChessMove move : piece.pieceMoves(board, start)) {
             ChessBoard simulation = duplicateBoard();
 
@@ -120,6 +115,7 @@ public class ChessGame {
         targetBoard.addPiece(move.getEndPosition(), moved);
     }
 
+    // get all the valid moves for given team Color
     private Collection<ChessMove> collectMoves(TeamColor color) {
 
         Collection<ChessMove> moves = new ArrayList<>();

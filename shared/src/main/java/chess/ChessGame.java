@@ -43,6 +43,7 @@ public class ChessGame {
         if (piece == null) {
             return null;
         }
+
         Collection<ChessMove> legal = new ArrayList<>();
         for (ChessMove move : piece.pieceMoves(board, start)) {
             ChessBoard simulation = duplicateBoard();
@@ -64,17 +65,20 @@ public class ChessGame {
         return isCheck(teamColor, board);
     }
 
+    //Checks if still in check and they can't move anywhere
     public boolean isInCheckmate(TeamColor teamColor) {
         return isInCheck(teamColor)
                 && collectMoves(teamColor).isEmpty();
     }
 
+    //Doesn't have anywhere to move and isn't in check
     public boolean isInStalemate(TeamColor teamColor) {
         return currentTurn == teamColor
                 && !isInCheck(teamColor)
                 && collectMoves(teamColor).isEmpty();
     }
 
+    //This function checks if the move the user is trying is valid
     private void validateMove(ChessMove move) throws InvalidMoveException {
 
         ChessPiece piece = board.getPiece(move.getStartPosition());

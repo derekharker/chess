@@ -17,7 +17,6 @@ public class MemoryUser implements UserDAO {
     public boolean isVerifiedUser(String username, String password) {
 
         UserData user = users.get(username);
-
         if (user == null) {
             return false;
         }
@@ -32,7 +31,6 @@ public class MemoryUser implements UserDAO {
     public UserData createUser(UserData newUser) {
 
         users.put(newUser.username(), newUser);
-
         return newUser;
     }
 
@@ -41,7 +39,6 @@ public class MemoryUser implements UserDAO {
         if (!users.containsKey(username)) {
             return null;
         }
-
         return users.get(username);
     }
 }

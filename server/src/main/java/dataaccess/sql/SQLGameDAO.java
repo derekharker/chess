@@ -166,4 +166,16 @@ public class SQLGameDAO implements GameDAO {
         return initialGameDAO++;
     }
 
+    @Override
+    public void clearApplication(AuthDAO authDAO, UserDAO userDAO) {
+
+        try {
+            clearGames();
+            authDAO.clearAuths();
+            userDAO.clearUsers();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to clear application", e);
+        }
+    }
 }

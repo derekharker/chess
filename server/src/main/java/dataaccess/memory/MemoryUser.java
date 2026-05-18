@@ -28,6 +28,7 @@ public class MemoryUser implements UserDAO {
         users.clear();
     }
 
+
     public UserData createUser(UserData newUser) {
 
         users.put(newUser.username(), newUser);

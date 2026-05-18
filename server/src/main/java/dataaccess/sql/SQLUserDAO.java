@@ -95,4 +95,32 @@ public class SQLUserDAO implements UserDAO {
             throw new RuntimeException("Failed to verify user", e);
         }
     }
+
+    @Override
+    public UserData getUser(String username) {
+
+        String sql = "SELECT username, password, email FROM user WHERE username = ?";
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+
+            try (var rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return new UserData(
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("email")
+                    );
+                }
+
+                return null;
+            }
+
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException("Failed to get user", e);
+        }
+    }
 }

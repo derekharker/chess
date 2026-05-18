@@ -24,6 +24,10 @@ public class MemoryGame implements GameDAO {
         return nextGameID++;
     }
 
+    public int createGameID() {
+        return nextGameID++;
+    }
+
     public void clearGames() {
         games.clear();
     }

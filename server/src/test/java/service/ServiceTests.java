@@ -48,6 +48,14 @@ public class ServiceTests {
     }
 
     @Test
+    @DisplayName("Register Duplicate Failure")
+    void registerDuplicateFailure() {
+        registerUser();
+        RegisterResponse response = userService.register(buildRegisterRequest());
+        Assertions.assertEquals(ErrorMessages.ALREADYTAKEN, response.message());
+    }
+
+    @Test
     @DisplayName("Login Success")
     void loginSuccess() {
         registerThenLogout();
@@ -113,15 +121,25 @@ public class ServiceTests {
     void joinGameFailure() {
         RegisterResponse user = registerUser();
         CreateGameResponse game = gameService.createGame(new CreateGameRequest(GAME_NAME, user.authToken()));
-
-        JoinGameRequest request =
-                new JoinGameRequest(ChessGame.TeamColor.WHITE, game.gameID(), user.authToken());
-
+        JoinGameRequest request = new JoinGameRequest(ChessGame.TeamColor.WHITE, game.gameID(), user.authToken());
         gameService.joinGame(request);
 
         JoinGameResponse secondAttempt = gameService.joinGame(request);
-
         Assertions.assertEquals(ErrorMessages.ALREADYTAKEN, secondAttempt.message());
+    }
+
+    @Test
+    @DisplayName("Join Invalid Game Failure")
+    void joinInvalidGameFailure() {
+        RegisterResponse user = registerUser();
+        JoinGameResponse response =
+                gameService.joinGame(
+                        new JoinGameRequest(ChessGame.TeamColor.WHITE, 9999, user.authToken())
+                );
+        Assertions.assertEquals(
+                ErrorMessages.BADREQUEST,
+                response.message()
+        );
     }
 
     @Test

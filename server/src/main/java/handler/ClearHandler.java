@@ -4,7 +4,6 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import io.javalin.http.Context;
-import response.ClearResponse;
 import service.SystemService;
 
 public class ClearHandler {
@@ -16,10 +15,8 @@ public class ClearHandler {
     }
 
     public void clear(Context ctx) {
-
-        ClearResponse response = systemService.clearApplication();
-
+        systemService.clearApplication();
         ctx.status(200);
-        ctx.json(response);
+        ctx.json(new Object());
     }
 }

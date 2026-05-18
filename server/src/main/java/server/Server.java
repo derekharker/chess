@@ -12,8 +12,7 @@ public class Server {
 
     public Server() {
 
-        app = Javalin.create(config ->
-                config.staticFiles.add("web"));
+        app = Javalin.create(config -> config.staticFiles.add("web"));
 
         MemoryUser userDAO = new MemoryUser();
         MemoryAuth authDAO = new MemoryAuth();

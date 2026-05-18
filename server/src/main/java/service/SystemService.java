@@ -3,7 +3,6 @@ package service;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
-import response.ClearResponse;
 
 public class SystemService {
 
@@ -17,8 +16,7 @@ public class SystemService {
         this.userDAO = userDAO;
     }
 
-    public ClearResponse clearApplication() {
+    public void clearApplication() {
         gameDAO.clearApplication(authDAO, userDAO);
-        return new ClearResponse(null);
     }
 }

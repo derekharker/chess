@@ -5,43 +5,45 @@ import io.javalin.*;
 import dataaccess.memory.MemoryGame;
 import dataaccess.memory.MemoryAuth;
 import dataaccess.memory.MemoryUser;
-import io.javalin.json.JavalinGson;
 
 public class Server {
 
-    private Javalin javalin;
+    private final Javalin app;
 
     public Server() {
-        javalin = Javalin.create(
-                config -> {
-                    config.staticFiles.add("web");
 
-                    config.jsonMapper(new JavalinGson());
-                }
-        );
+        app = Javalin.create(config ->
+                config.staticFiles.add("web"));
 
         MemoryUser userDAO = new MemoryUser();
         MemoryAuth authDAO = new MemoryAuth();
         MemoryGame gameDAO = new MemoryGame();
 
-        // Register endpoints
-        javalin.delete("/db", ctx -> new ClearHandler(userDAO, authDAO, gameDAO).handle(ctx));
-        javalin.post("/user", ctx -> new RegisterHandler(userDAO, authDAO).handle(ctx));
-        javalin.delete("/session", ctx -> new LogoutHandler(userDAO, authDAO).handle(ctx));
-        javalin.post("/session", ctx -> new LoginHandler(userDAO, authDAO).handle(ctx));
-        javalin.post("/game", ctx -> new CreateGameHandler(authDAO, gameDAO).handle(ctx));
-        javalin.put("/game", ctx -> new JoinGameHandler(authDAO, gameDAO).handle(ctx));
-        javalin.get("/game", ctx -> new ListGamesHandler(authDAO, gameDAO).handle(ctx));
+        UserHandler userHandler = new UserHandler(userDAO, authDAO);
+        SessionHandler sessionHandler = new SessionHandler(userDAO, authDAO);
+
+        GameHandler gameHandler = new GameHandler(authDAO, gameDAO);
+        ClearHandler clearHandler = new ClearHandler(gameDAO, authDAO, userDAO);
+
+        app.post("/user", userHandler::register);
+
+        // start the login , logout process
+        app.post("/session", sessionHandler::login);
+        app.delete("/session", sessionHandler::logout);
+
+        app.get("/game", gameHandler::listGames);
+        app.post("/game", gameHandler::createGame);
+        app.put("/game", gameHandler::joinGame);
+
+        app.delete("/db", clearHandler::clear);
     }
 
-    public int run(int desiredPort) {
-        javalin.start(desiredPort);
-        int actPort = javalin.port();
-        System.out.println("Server running on port " + actPort);
-        return actPort;
+    public int run(int port) {
+        app.start(port);
+        return app.port();
     }
 
     public void stop() {
-        javalin.stop();
+        app.stop();
     }
 }

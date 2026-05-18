@@ -24,6 +24,7 @@ public class ClearHandler {
             ctx.json(Map.of());
         } catch (Exception e) {
             ctx.status(500);
+            // error with ctx.json because I don't have correct dependency for it
             ctx.json(Map.of("message", ErrorMessages.SQLERROR));
         }
     }

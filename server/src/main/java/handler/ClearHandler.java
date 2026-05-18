@@ -4,7 +4,10 @@ import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import dataaccess.interfaces.UserDAO;
 import io.javalin.http.Context;
+import service.ErrorMessages;
 import service.SystemService;
+
+import java.util.Map;
 
 public class ClearHandler {
 
@@ -15,9 +18,13 @@ public class ClearHandler {
     }
 
     public void clear(Context ctx) {
-        systemService.clearApplication();
-        ctx.status(200);
-        ctx.contentType("application/json");
-        ctx.result("{}");
+        try {
+            systemService.clearApplication();
+            ctx.status(200);
+            ctx.json(Map.of());
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(Map.of("message", ErrorMessages.SQLERROR));
+        }
     }
 }

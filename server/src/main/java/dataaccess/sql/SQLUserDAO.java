@@ -27,25 +27,6 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean userExists(String username) {
-
-        String sql = "SELECT username FROM user WHERE username = ?";
-
-        try (var conn = DatabaseManager.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, username);
-
-            try (var rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (SQLException | DataAccessException e) {
-            return false;
-        }
-    }
-
-    @Override
     public UserData createUser(UserData userData) {
 
         if (userData.password() == null) {

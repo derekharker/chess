@@ -34,7 +34,7 @@ public class MemoryGame implements GameDAO {
         GameData game = games.get(gameID);
 
         if (game == null) {
-            return new JoinGameResponse(ErrorMessages.UNAUTHORIZED);
+            return new JoinGameResponse(ErrorMessages.BADREQUEST);
         }
 
         if (teamColor == null) {

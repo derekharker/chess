@@ -46,6 +46,12 @@ public class GameService {
         if (!authDAO.isVerifiedAuth(authT)) {
             return new ListGamesResponse(null, ErrorMessages.UNAUTHORIZED);
         }
-        return new ListGamesResponse(gameDAO.listGames(), null);
+
+        var games = gameDAO.listGames().stream()
+                .map(game -> new ListGamesResponse.ListedGame(
+                        game.getGameID(), game.getWhiteUsername(),
+                        game.getBlackUsername(), game.getGameName())).toList();
+
+        return new ListGamesResponse(games, null);
     }
 }

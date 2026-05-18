@@ -17,6 +17,7 @@ public class ClearHandler {
     public void clear(Context ctx) {
         systemService.clearApplication();
         ctx.status(200);
-        ctx.json(new Object());
+        ctx.contentType("application/json");
+        ctx.result("{}");
     }
 }

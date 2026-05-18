@@ -143,4 +143,27 @@ public class SQLGameDAO implements GameDAO {
             return false;
         }
     }
+
+    @Override
+    public int createGame(String gameName) {
+
+        int gameID = createGameID();
+
+        String sql = "INSERT INTO game (game_id, game_name, game_info) VALUES (?, ?, ?)";
+        String gameInfo = (String) Translation.fromObjectToJson(new ChessGame());
+
+        try {
+            DatabaseManager.executeUpdate(sql, gameID, gameName, gameInfo);
+            return gameID;
+
+        } catch (DataAccessException e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public int createGameID() {
+        return initialGameDAO++;
+    }
+
 }

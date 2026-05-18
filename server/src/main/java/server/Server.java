@@ -31,6 +31,7 @@ public class Server {
         app.post("/session", sessionHandler::login);
         app.delete("/session", sessionHandler::logout);
 
+        // list game, create and join it
         app.get("/game", gameHandler::listGames);
         app.post("/game", gameHandler::createGame);
         app.put("/game", gameHandler::joinGame);

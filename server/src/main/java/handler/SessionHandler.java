@@ -39,7 +39,8 @@ public class SessionHandler {
             ctx.status(200);
         }
 
-        ctx.json(response);
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(response));
     }
 
     //logout handler with errors
@@ -54,6 +55,7 @@ public class SessionHandler {
             ctx.status(200);
         }
 
-        ctx.json(response);
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(response));
     }
 }

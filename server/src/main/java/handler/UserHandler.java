@@ -38,6 +38,7 @@ public class UserHandler {
             ctx.status(200);
         }
 
-        ctx.json(response);
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(response));
     }
 }

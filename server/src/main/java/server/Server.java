@@ -2,9 +2,12 @@ package server;
 
 import handler.*;
 import io.javalin.*;
-import dataaccess.memory.MemoryGame;
-import dataaccess.memory.MemoryAuth;
-import dataaccess.memory.MemoryUser;
+import dataaccess.DataAccessException;
+import dataaccess.sqldaos.SQLAuthDAO;
+import dataaccess.sqldaos.SQLGameDAO;
+import dataaccess.sqldaos.SQLUserDAO;
+
+import static dataaccess.DatabaseManager.configureDatabase;
 
 public class Server {
 
@@ -14,9 +17,15 @@ public class Server {
 
         app = Javalin.create(config -> config.staticFiles.add("web"));
 
-        MemoryUser userDAO = new MemoryUser();
-        MemoryAuth authDAO = new MemoryAuth();
-        MemoryGame gameDAO = new MemoryGame();
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            System.out.println("Problem configuring database: " + e.getMessage());
+        }
+
+        SQLUserDAO userDAO = new SQLUserDAO();
+        SQLAuthDAO authDAO = new SQLAuthDAO();
+        SQLGameDAO gameDAO = new SQLGameDAO();
 
         UserHandler userHandler = new UserHandler(userDAO, authDAO);
         SessionHandler sessionHandler = new SessionHandler(userDAO, authDAO);

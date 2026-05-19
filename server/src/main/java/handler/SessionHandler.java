@@ -12,7 +12,10 @@ import request.LoginRequest;
 import response.LoginResponse;
 import response.LogoutResponse;
 
+import service.ErrorMessages;
 import service.UserService;
+
+import java.util.Map;
 
 public class SessionHandler {
 
@@ -23,39 +26,51 @@ public class SessionHandler {
         userService = new UserService(userDAO, authDAO);
     }
 
-    // if login unauthorized token
     public void login(Context ctx) {
+        try {
+            LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
+            LoginResponse response = userService.login(request);
 
-        LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
-        LoginResponse response = userService.login(request);
-        if (response.message() != null) {
-
-            if (response.message().contains("unauthorized")) {
-                ctx.status(401);
+            if (response.message() != null) {
+                if (response.message().contains("unauthorized")) {
+                    ctx.status(401);
+                } else {
+                    ctx.status(400);
+                }
             } else {
-                ctx.status(400);
+                ctx.status(200);
             }
-        } else {
-            ctx.status(200);
-        }
 
-        ctx.contentType("application/json");
-        ctx.result(gson.toJson(response));
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(response));
+
+        } catch (Exception e) {
+            sqlError(ctx);
+        }
     }
 
-    //logout handler with errors
     public void logout(Context ctx) {
+        try {
+            String auth = ctx.header("authorization");
+            LogoutResponse response = userService.logout(auth);
 
-        String auth = ctx.header("authorization");
-        LogoutResponse response = userService.logout(auth);
+            if (response.message() != null) {
+                ctx.status(401);
+            } else {
+                ctx.status(200);
+            }
 
-        if (response.message() != null) {
-            ctx.status(401);
-        } else {
-            ctx.status(200);
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(response));
+
+        } catch (Exception e) {
+            sqlError(ctx);
         }
+    }
 
+    private void sqlError(Context ctx) {
+        ctx.status(500);
         ctx.contentType("application/json");
-        ctx.result(gson.toJson(response));
+        ctx.result(gson.toJson(Map.of("message", ErrorMessages.SQLERROR)));
     }
 }

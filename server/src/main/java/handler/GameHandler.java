@@ -15,6 +15,8 @@ import response.JoinGameResponse;
 import response.ListGamesResponse;
 
 import service.GameService;
+import service.ErrorMessages;
+import java.util.Map;
 
 public class GameHandler {
 

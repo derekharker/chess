@@ -21,11 +21,13 @@ public class ClearHandler {
         try {
             systemService.clearApplication();
             ctx.status(200);
-            ctx.json(Map.of());
+            ctx.contentType("application/json");
+            ctx.result("{}");
         } catch (Exception e) {
             ctx.status(500);
             // error with ctx.json because I don't have correct dependency for it
-            ctx.json(Map.of("message", ErrorMessages.SQLERROR));
+            ctx.contentType("application/json");
+            ctx.result("{\"message\":\"" + ErrorMessages.SQLERROR + "\"}");
         }
     }
 }

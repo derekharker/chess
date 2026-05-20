@@ -56,8 +56,10 @@ public class SessionHandler {
 
             if (response.message() != null) {
                 ctx.status(401);
+                //unauthorized
             } else {
                 ctx.status(200);
+                //good message
             }
 
             ctx.contentType("application/json");

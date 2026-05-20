@@ -33,19 +33,18 @@ public class GameHandler {
             String auth = ctx.header("authorization");
             ListGamesResponse response = gameService.listGames(auth);
 
-            if (response.message() != null) {
-                ctx.status(401);
+            int status;
+
+            if (response.message() == null) {
+                status = 200;
             } else {
-                ctx.status(200);
+                status = 401;
             }
 
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(response));
+            sendJson(ctx, status, response);
 
         } catch (Exception e) {
-            ctx.status(500);
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(Map.of("message", ErrorMessages.SQLERROR)));
+            sendServerError(ctx);
         }
     }
 
@@ -62,23 +61,11 @@ public class GameHandler {
             CreateGameResponse response =
                     gameService.createGame(updated);
 
-            if (response.message() != null) {
-                if (response.message().contains("unauthorized")) {
-                    ctx.status(401);
-                } else {
-                    ctx.status(400);
-                }
-            } else {
-                ctx.status(200);
-            }
-
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(response));
+            int status = getCreateGameStatus(response);
+            sendJson(ctx, status, response);
 
         } catch (Exception e) {
-            ctx.status(500);
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(Map.of("message", ErrorMessages.SQLERROR)));
+            sendServerError(ctx);
         }
     }
 
@@ -86,7 +73,9 @@ public class GameHandler {
         try {
             String auth = ctx.header("authorization");
 
-            JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+            JoinGameRequest request =
+                    gson.fromJson(ctx.body(), JoinGameRequest.class);
+
             JoinGameRequest updated =
                     new JoinGameRequest(
                             request.playerColor(),
@@ -97,25 +86,46 @@ public class GameHandler {
             JoinGameResponse response =
                     gameService.joinGame(updated);
 
-            if (response.message() != null) {
-                if (response.message().contains("already taken")) {
-                    ctx.status(403);
-                } else if (response.message().contains("unauthorized")) {
-                    ctx.status(401);
-                } else {
-                    ctx.status(400);
-                }
-            } else {
-                ctx.status(200);
-            }
-
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(response));
+            int status = getJoinGameStatus(response);
+            sendJson(ctx, status, response);
 
         } catch (Exception e) {
-            ctx.status(500);
-            ctx.contentType("application/json");
-            ctx.result(gson.toJson(Map.of("message", ErrorMessages.SQLERROR)));
+            sendServerError(ctx);
         }
+    }
+
+    //needed to add helper functions so code duplication quality isn't flagged
+    private void sendJson(Context ctx, int status, Object response) {
+        ctx.status(status);
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(response));
+    }
+
+    //same thing here
+    private void sendServerError(Context ctx) {
+        sendJson(ctx, 500, Map.of("message", ErrorMessages.SQLERROR));
+    }
+
+    //and same thing here too
+    private int getCreateGameStatus(CreateGameResponse response) {
+        if (response.message() == null) {
+            return 200;
+        }
+
+        if (response.message().contains("unauthorized")) {
+            return 401;
+        }
+
+        return 400;
+    }
+
+    private int getJoinGameStatus(JoinGameResponse response) {
+        if (response.message() == null) {
+            return 200;}
+        if (response.message().contains("already taken")) {
+            return 403;}
+        if (response.message().contains("unauthorized")) {
+            return 401;}
+        return 400;
     }
 }

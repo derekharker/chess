@@ -73,6 +73,20 @@ public class ServerFacadeTests {
         });
     }
 
+    @Test
+    void logoutSuccess() throws ClientException {
+        var authData = facade.register("p1", "passwd", "email@gmail.com");
 
+        Assertions.assertDoesNotThrow(() -> {
+            facade.logout(authData.authToken());
+        });
+    }
+
+    @Test
+    void logoutFailBadToken() throws ClientException {
+        Assertions.assertThrows(ClientException.class, () -> {
+            facade.logout("bad not applicable N/A");
+        });
+    }
 
 }

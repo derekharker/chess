@@ -52,4 +52,27 @@ public class ServerFacadeTests {
         });
     }
 
+    @Test
+    void loginSuccess() throws ClientException {
+        facade.register("p1", "passwd", "email@gmail.com");
+
+        var authData = facade.login("p1", "passwd");
+
+        Assertions.assertNotNull(authData);
+        Assertions.assertEquals("p1", authData.username());
+        Assertions.assertNotNull(authData.authToken());
+        Assertions.assertTrue(authData.authToken().length() > 10);
+    }
+
+    @Test
+    void loginFailWrongPassword() throws ClientException {
+        facade.register("p2", "trio", "22@gmail.com");
+
+        Assertions.assertThrows(ClientException.class, () -> {
+            facade.login("p2", "duo");
+        });
+    }
+
+
+
 }

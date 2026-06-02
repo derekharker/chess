@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
+import ui.ClientException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,5 +101,30 @@ public class ClientCommunication {
 
             return gson.fromJson(json, responseClass);
         }
+    }
+    //when we have msg to error url
+    private String readErrorMessage(HttpURLConnection connection) {
+        try (InputStream errorStream = connection.getErrorStream()) {
+            if (errorStream == null) {
+                return "Request failed.";
+            }
+// json eror stream
+            String json = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
+
+            if (json.isBlank()) {
+                return "Request failed.";
+            }
+            ErrorResponse errorResponse = gson.fromJson(json, ErrorResponse.class);
+
+            if (errorResponse != null && errorResponse.message() != null && !errorResponse.message().isBlank()) {
+                return errorResponse.message();
+            }
+            return "Request failed.";
+        } catch (Exception e) {
+            return "Request failed.";
+        }
+    }
+
+    private record ErrorResponse(String message) {
     }
 }

@@ -48,7 +48,7 @@ public class ClientCommunication {
 
             var connection = (HttpURLConnection)url.openConnection();
 
-            connection.setRequestProperty(method);
+            connection.setRequestMethod(method);
             connection.setRequestProperty("Content-Type", "application/json");
 
             if (authToken != null && !authToken.isBlank()) {

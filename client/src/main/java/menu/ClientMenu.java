@@ -1,63 +1,95 @@
 package menu;
 
+import java.util.Arrays;
+
 public class ClientMenu {
-    private void postLoginInfo() {
-        System.out.println("create <NAME> - a game");
-        System.out.println("list - games");
-        System.out.println("join <ID> [WHITE|BLACK] - a game");
-        System.out.println("observe <ID> - a game");
-        System.out.println("logout - when done");
-        System.out.println("quit - playing chess");
-        System.out.println("help - with possible commands");
-    }
 
     public String readPostLoginResponse(String line) {
         try {
-            var tokens = line.toLowerCase().split("");
-            var cmd = (tokens.length > 0) ? tokens[0] : "help";
+            var tokens = line.trim().split("\\s+");
+
+            if (line.isBlank()) {
+                return postLoginHelp();
+            }
+
+            var cmd = tokens[0].toLowerCase();
 
             return switch (cmd) {
-                case "create" -> create(tokens[1]);
+                case "help" -> postLoginHelp();
+                case "create" -> createCommand(tokens);
                 case "list" -> list();
-                case "join" -> join(tokens[1], tokens[2]);
-                case "observe" -> observe(tokens[1]);
+                case "join" -> joinCommand(tokens);
+                case "observe" -> observeCommand(tokens);
                 case "logout" -> logout();
                 case "quit" -> quitChess();
-                default -> postLoginHelp();
+                default -> "Unknown command.\n\n" + postLoginHelp();
             };
         } catch (Exception e) {
-            return e.getMessage();
+            return "Something went wrong. Please try again.";
         }
     }
 
     private String postLoginHelp() {
-        return "If you want to create a game, enter: create <game name>\n" +
-                "If you want to list all games currently in the database, enter: list\n" +
-                "If you want to join a present game, enter: join <game number> <WHITE|BLACK>\n" +
-                "If you want to observe a game happening, enter: observe <game number>\n" +
-                "If you want to logout when done, enter: logout\n" +
-                "If you want to quit chess, enter: quit\n" +
-                "Enter help again if you want to see this beautiful menu again :)\n";
+        return """
+                create <NAME> - create a new game
+                list - list all games
+                join <GAME_NUMBER> <WHITE|BLACK> - join a game as white or black
+                observe <GAME_NUMBER> - observe a game
+                logout - log out
+                quit - quit chess
+                help - show possible commands
+                """;
+    }
+
+    private String createCommand(String[] tokens) {
+        if (tokens.length < 2) {
+            return "Usage: create <game name>";
+        }
+
+        String gameName = String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length));
+        return create(gameName);
+    }
+
+    private String joinCommand(String[] tokens) {
+        if (tokens.length != 3) {
+            return "Usage: join <game number> <WHITE|BLACK>";
+        }
+
+        return join(tokens[1], tokens[2]);
+    }
+
+    private String observeCommand(String[] tokens) {
+        if (tokens.length != 2) {
+            return "Usage: observe <game number>";
+        }
+
+        return observe(tokens[1]);
     }
 
     private String create(String name) {
-        return "created game";
+        return "Created game: " + name;
     }
 
     private String list() {
-        return "list";
+        return "List games is not implemented yet.";
     }
 
-    private String join(String name, String color) {
+    private String join(String gameNumber, String color) {
+        color = color.toUpperCase();
 
+        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+            return "Invalid color. Please enter WHITE or BLACK.";
+        }
+
+        return "Joined game " + gameNumber + " as " + color + ".";
     }
 
-    private String observe(String name) {
-
+    private String observe(String gameNumber) {
+        return "Observing game " + gameNumber + ".";
     }
 
     private String logout() {
-        return "Logged out successfully";
+        return "Logged out successfully.";
     }
 
     private String quitChess() {

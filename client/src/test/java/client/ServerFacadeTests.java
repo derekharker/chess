@@ -124,4 +124,23 @@ public class ServerFacadeTests {
             facade.listGames("bad-token");
         });
     }
+
+    @Test
+    public void joinGameSuccess() throws ClientException {
+        var authData = facade.register("play1", "password", "p1@email.com");
+        int gameID = facade.createGame(authData.authToken(), "My Game");
+
+        Assertions.assertDoesNotThrow(() -> {
+            facade.joinGame(authData.authToken(), gameID, "WHITE");
+        });
+    }
+
+    @Test
+    public void joinGameFailsWithBadGameID() throws ClientException {
+        var authData = facade.register("p1", "password", "p1@email.com");
+
+        Assertions.assertThrows(ClientException.class, () -> {
+            facade.joinGame(authData.authToken(), 9, "WHITE");
+        });
+    }
 }

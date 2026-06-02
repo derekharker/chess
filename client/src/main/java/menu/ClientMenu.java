@@ -1,8 +1,28 @@
 package menu;
 
+import client.ServerFacade;
+import model.GameData;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ClientMenu {
+
+    private final ServerFacade facade;
+    private String authToken;
+    private String username;
+    private boolean loggedIn = false;
+
+    private List<GameData> lastGames = new ArrayList<>();
+
+    public ClientMenu(int port) {
+        facade = new ServerFacade(port);
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
 
     public String readPostLoginResponse(String line) {
         try {

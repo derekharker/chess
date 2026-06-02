@@ -1,9 +1,8 @@
-import server.Server;
 import chess.*;
 
-public class ServerMain {
+public class Main {
     public static void main(String[] args) {
-        Server server = new Server();
+        server.ServerMain server = new server.ServerMain();
         server.run(8080);
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Server" + piece);

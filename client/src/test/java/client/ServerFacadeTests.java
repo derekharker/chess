@@ -89,4 +89,20 @@ public class ServerFacadeTests {
         });
     }
 
+    @Test
+    void createGameSuccess() throws ClientException {
+        var authData = facade.register("p1", "pswd", "email");
+
+        int gameID = facade.createGame(authData.authToken(), "sample game");
+
+        Assertions.assertTrue(gameID > 0);
+    }
+
+    @Test
+    void createGameFailNoAuth() throws ClientException {
+        Assertions.assertThrows(ClientException.class, () -> {
+            facade.createGame("bad-token", "My Game");
+        });
+    }
+
 }

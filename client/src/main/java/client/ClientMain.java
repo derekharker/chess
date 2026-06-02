@@ -7,21 +7,23 @@ import java.util.Scanner;
 public class ClientMain {
     public static void main(String[] args) {
         var scanner = new Scanner(System.in);
-        var menu = new ClientMenu();
+        var menu = new ClientMenu(8080);
 
-        System.out.println("♕ Welcome to Chess!");
+        System.out.println("Welcome to Chess!");
         System.out.println("Type help to get started.");
 
         while (true) {
             System.out.print(">>> ");
             String line = scanner.nextLine();
 
-            String result = menu.readPostLoginResponse(line);
-            System.out.println(result);
+            String result = menu.eval(line);
 
-            if (line.trim().equalsIgnoreCase("quit")) {
+            if (result.equals("quit")) {
+                System.out.println("Goodbye!");
                 break;
             }
+
+            System.out.println(result);
         }
     }
 }

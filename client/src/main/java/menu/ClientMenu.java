@@ -1,11 +1,13 @@
 package menu;
 
 import client.ServerFacade;
+import model.AuthData;
 import model.GameData;
 import ui.ClientException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ClientMenu {
@@ -16,6 +18,7 @@ public class ClientMenu {
     private boolean loggedIn = false;
 
     private List<GameData> lastGames = new ArrayList<>();
+    private final BoardPrinter boardPrinter = new BoardPrinter();
 
     public ClientMenu(int port) {
         facade = new ServerFacade(port);
@@ -43,11 +46,7 @@ public class ClientMenu {
         }
     }
 
-    private String preLoginHelp() {
-        return "";
-    }
-
-    private String evalPreLogin(String line) {
+    private String evalPreLogin(String line) throws ClientException {
         var tokens = line.trim().split("\\s+");
         var command = tokens[0].toLowerCase();
 
@@ -60,29 +59,29 @@ public class ClientMenu {
         };
     }
 
-    public String readPostLoginResponse(String line) {
-        try {
-            var tokens = line.trim().split("\\s+");
+    private String evalPostLogin(String line) throws ClientException {
+        var tokens = line.trim().split("\\s+");
+        var command = tokens[0].toLowerCase();
 
-            if (line.isBlank()) {
-                return postLoginHelp();
-            }
+        return switch (command) {
+            case "help" -> postLoginHelp();
+            case "create" -> createCommand(tokens);
+            case "list" -> list();
+            case "join" -> joinCommand(tokens);
+            case "observe" -> observeCommand(tokens);
+            case "logout" -> logout();
+            case "quit" -> "quit";
+            default -> "Unknown command.\n\n" + postLoginHelp();
+        };
+    }
 
-            var cmd = tokens[0].toLowerCase();
-
-            return switch (cmd) {
-                case "help" -> postLoginHelp();
-                case "create" -> createCommand(tokens);
-                case "list" -> list();
-                case "join" -> joinCommand(tokens);
-                case "observe" -> observeCommand(tokens);
-                case "logout" -> logout();
-                case "quit" -> quitChess();
-                default -> "Unknown command.\n\n" + postLoginHelp();
-            };
-        } catch (Exception e) {
-            return "Something went wrong. Please try again.";
-        }
+    private String preLoginHelp() {
+        return """
+                register <USERNAME> <PASSWORD> <EMAIL> - create an account
+                login <USERNAME> <PASSWORD> - log in
+                quit - quit chess
+                help - show possible commands
+                """;
     }
 
     private String postLoginHelp() {
@@ -97,58 +96,137 @@ public class ClientMenu {
                 """;
     }
 
-    private String createCommand(String[] tokens) {
+    private String register(String[] tokens) throws ClientException {
+        if (tokens.length != 4) {
+            return "Usage: register <USERNAME> <PASSWORD> <EMAIL>";
+        }
+
+        AuthData authData = facade.register(tokens[1], tokens[2], tokens[3]);
+
+        authToken = authData.authToken();
+        username = authData.username();
+        loggedIn = true;
+
+        return "Registered and logged in as " + username + ".";
+    }
+
+    private String login(String[] tokens) throws ClientException {
+        if (tokens.length != 3) {
+            return "Usage: login <USERNAME> <PASSWORD>";
+        }
+
+        AuthData authData = facade.login(tokens[1], tokens[2]);
+
+        authToken = authData.authToken();
+        username = authData.username();
+        loggedIn = true;
+
+        return "Logged in as " + username + ".";
+    }
+
+    private String logout() throws ClientException {
+        facade.logout(authToken);
+
+        authToken = null;
+        username = null;
+        loggedIn = false;
+        lastGames.clear();
+        return "Logged out successfully.";
+    }
+
+    //cmd to create
+    private String createCommand(String[] tokens) throws ClientException {
         if (tokens.length < 2) {
             return "Usage: create <game name>";
         }
 
         String gameName = String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length));
-        return create(gameName);
+        int gameID = facade.createGame(authToken, gameName);
+
+        return "Created game: " + gameName;
     }
 
-    private String joinCommand(String[] tokens) {
+    private String list() throws ClientException {
+        Collection<GameData> games = facade.listGames(authToken);
+        lastGames = new ArrayList<>(games);
+
+        if (lastGames.isEmpty()) {
+            return "No games have been created yet.";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < lastGames.size(); i++) {
+            GameData game = lastGames.get(i);
+
+            result.append(i + 1)
+                    .append(". ")
+                    .append(game.getGameName())
+                    .append(" | White: ")
+                    .append(displayPlayer(game.getWhiteUsername()))
+                    .append(" | Black: ")
+                    .append(displayPlayer(game.getBlackUsername()))
+                    .append("\n");
+        }
+
+        return result.toString();
+    }
+
+    private String joinCommand(String[] tokens) throws ClientException {
         if (tokens.length != 3) {
             return "Usage: join <game number> <WHITE|BLACK>";
         }
 
-        return join(tokens[1], tokens[2]);
+        int listNumber = parseGameNumber(tokens[1]);
+        String color = tokens[2].toUpperCase();
+
+        if (!color.equals("WHITE") && !color.equals("BLACK")) {
+            return "Invalid color. Please enter WHITE or BLACK.";
+        }
+
+        GameData game = getGameFromListNumber(listNumber);
+        facade.joinGame(authToken, game.getGameID(), color);
+
+        String board = color.equals("BLACK")
+                ? boardPrinter.drawBlackBoard()
+                : boardPrinter.drawWhiteBoard();
+
+        return "Joined " + game.getGameName() + " as " + color + "\n\n" + board;
     }
 
     private String observeCommand(String[] tokens) {
         if (tokens.length != 2) {
             return "Usage: observe <game number>";
         }
-
-        return observe(tokens[1]);
+        int listNumber = parseGameNumber(tokens[1]);
+        GameData game = getGameFromListNumber(listNumber);
+        //return string for user
+        return "Observing " + game.getGameName() + ".";
     }
 
-    private String create(String name) {
-        return "Created game: " + name;
+    private int parseGameNumber(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Game number must be a number.");
+        }
     }
 
-    private String list() {
-        return "List games is not implemented yet.";
+    private GameData getGameFromListNumber(int listNumber) {
+        if (lastGames.isEmpty()) {
+            throw new IllegalArgumentException("Use list before choosing a game.");
+        }
+        if (listNumber < 1 || listNumber > lastGames.size()) {
+            throw new IllegalArgumentException("That game number is not in the list.");
+        }
+        return lastGames.get(listNumber - 1);
     }
 
-    private String join(String gameNumber, String color) {
-        color = color.toUpperCase();
-
-        if (!color.equals("WHITE") && !color.equals("BLACK")) {
-            return "Invalid color. Please enter WHITE or BLACK.";
+    private String displayPlayer(String player) {
+        if (player == null || player.isBlank()) {
+            return "empty";
         }
 
-        return "Joined game " + gameNumber + " as " + color + ".";
-    }
-
-    private String observe(String gameNumber) {
-        return "Observing game " + gameNumber + ".";
-    }
-
-    private String logout() {
-        return "Logged out successfully.";
-    }
-
-    private String quitChess() {
-        return "Bye!";
+        return player;
     }
 }

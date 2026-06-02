@@ -2,8 +2,12 @@ package client;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 public class ClientCommunication {
     private final String serverURL;
@@ -75,6 +79,26 @@ public class ClientCommunication {
             throw e;
         } catch (Exception e) {
             throw new ClientException("Unable to talk to the server on MySQL ; sorry");
+        }
+    }
+
+    private void writeRequestBody(HttpURLConnection conn, Object reqBody) throws IOException {
+        String json = gson.toJson(reqBody);
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(json.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private <T> T readResponseBody(HttpURLConnection connection, Class<T> responseClass) throws IOException {
+        try (InputStream inputStream = connection.getInputStream()) {
+            String json = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+            if (json.isBlank()) {
+                return null;
+            }
+
+            return gson.fromJson(json, responseClass);
         }
     }
 }

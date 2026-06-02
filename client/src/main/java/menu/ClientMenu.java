@@ -2,6 +2,7 @@ package menu;
 
 import client.ServerFacade;
 import model.GameData;
+import ui.ClientException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,41 @@ public class ClientMenu {
 
     public boolean isLoggedIn() {
         return loggedIn;
+    }
+
+    public String eval(String line) {
+        if (line == null || line.isBlank()) {
+            return loggedIn ? postLoginHelp() : preLoginHelp();
+        }
+
+        try {
+            if (loggedIn) {
+                return evalPostLogin(line);
+            } else {
+                return evalPreLogin(line);
+            }
+        } catch (ClientException e) {
+            return e.getMessage();
+        } catch (Exception e) {
+            return "Something went wrong. Please try again.";
+        }
+    }
+
+    private String preLoginHelp() {
+        return "";
+    }
+
+    private String evalPreLogin(String line) {
+        var tokens = line.trim().split("\\s+");
+        var command = tokens[0].toLowerCase();
+
+        return switch (command) {
+            case "help" -> preLoginHelp();
+            case "quit" -> "quit";
+            case "login" -> login(tokens);
+            case "register" -> register(tokens);
+            default -> "Unknown command.\n\n" + preLoginHelp();
+        };
     }
 
     public String readPostLoginResponse(String line) {

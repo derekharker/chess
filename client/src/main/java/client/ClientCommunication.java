@@ -50,6 +50,7 @@ public class ClientCommunication {
 
             connection.setRequestMethod(method);
             connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
 
             if (authToken != null && !authToken.isBlank()) {
                 connection.setRequestProperty("Authorization", authToken);

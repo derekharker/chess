@@ -9,11 +9,11 @@ import dataaccess.sqldaos.SQLUserDAO;
 
 import static dataaccess.DatabaseManager.configureDatabase;
 
-public class ServerMain {
+public class Server {
 
     private final Javalin app;
 
-    public ServerMain() {
+    public Server() {
 
         app = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -57,7 +57,7 @@ public class ServerMain {
     }
 
     public static void main(String[] args) {
-        new ServerMain().run(8080);
+        new Server().run(8080);
         System.out.println("♕ 240 Chess Server running on port 8080");
     }
 }

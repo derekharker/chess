@@ -33,12 +33,23 @@ public class ServerFacadeTests {
         var authData = facade.register("player1", "password", "p1@email.com");
 
         Assertions.assertNotNull(authData);
+        Assertions.assertEquals("player1", authData.username());
+        Assertions.assertNotNull(authData.authToken());
         Assertions.assertTrue(authData.authToken().length() > 10);
     }
 
     @Test
     void clearSuccess() throws ClientException {
         Assertions.assertDoesNotThrow(() -> facade.clear());
+    }
+
+    @Test
+    void registerFailUsernameTaken() throws ClientException {
+        facade.register("p1", "passwd", "email@gmail.com");
+
+        Assertions.assertThrows(ClientException.class, () -> {
+            facade.register("p1", "mdmd", "email222@gmail.com");
+        });
     }
 
 }

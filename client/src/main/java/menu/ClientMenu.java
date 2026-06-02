@@ -201,7 +201,7 @@ public class ClientMenu {
         int listNumber = parseGameNumber(tokens[1]);
         GameData game = getGameFromListNumber(listNumber);
         //return string for user
-        return "Observing " + game.getGameName() + ".";
+        return "Observing " + game.getGameName() + "\n\n" + boardPrinter.drawWhiteBoard();
     }
 
     private int parseGameNumber(String text) {

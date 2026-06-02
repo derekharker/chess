@@ -67,7 +67,7 @@ public class BoardPrinter {
             return SET_TEXT_COLOR_WHITE;
         }
 
-        return isWhitePiece(piece) ? SET_TEXT_COLOR_RED : SET_TEXT_COLOR_BLUE;
+        return isWhitePiece(piece) ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK;
     }
 
     private boolean isWhitePiece(String piece) {

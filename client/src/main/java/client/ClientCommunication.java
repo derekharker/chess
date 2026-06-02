@@ -44,7 +44,31 @@ public class ClientCommunication {
             var connection = (HttpURLConnection)url.openConnection();
 
             connection.setRequestProperty(method);
+            connection.setRequestProperty("Content-Type", "application/json");
 
+            if (authToken != null && !authToken.isBlank()) {
+                connection.setRequestProperty("Authorization", authToken);
+            }
+
+            if (requestBody != null) {
+                connection.setDoOutput(true);
+                writeRequestBody(connection, requestBody);
+            }
+
+            connection.connect();
+
+            var statusCode = connection.getResponseCode();
+
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new ClientException(readErrorMessage(connection));
+            }
+
+            if (responseClass == null || responseClass == Void.class) {
+                return null;
+            }
+
+            //return final bodyerror me=sg
+            return readResponseBody(connection, responseClass);
 
 
         } catch (ClientException e) {

@@ -1,5 +1,6 @@
 package passoff.server;
 
+import passoff.model.*;
 import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import server.ServerMain;

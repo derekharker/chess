@@ -17,11 +17,6 @@ import java.util.Collection;
 
 public class SQLGameDAO implements GameDAO {
 
-    private int initialGameDAO;
-
-    public SQLGameDAO() {
-        initialGameDAO = 1;
-    }
 
     @Override
     public void clearGames() {
@@ -146,24 +141,14 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public int createGame(String gameName) {
-
-        int gameID = createGameID();
-
-        String sql = "INSERT INTO game (game_id, game_name, game_info) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO game (game_name, game_info) VALUES (?, ?)";
         String gameInfo = (String) Translation.fromObjectToJson(new ChessGame());
 
         try {
-            DatabaseManager.executeUpdate(sql, gameID, gameName, gameInfo);
-            return gameID;
-
+            return DatabaseManager.executeUpdate(sql, gameName, gameInfo);
         } catch (DataAccessException e) {
             return 0;
         }
-    }
-
-    @Override
-    public int createGameID() {
-        return initialGameDAO++;
     }
 
     @Override

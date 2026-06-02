@@ -15,6 +15,7 @@ public class ServerFacade {
 
     public AuthData register(String username, String password, String email) throws ClientException {
         var request = new RegisterRequest(username, password, email);
+        System.out.println("Registering");
         return communication.post("/user", request, null, AuthData.class);
     }
 

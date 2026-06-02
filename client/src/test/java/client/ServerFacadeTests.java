@@ -2,6 +2,7 @@ package client;
 
 import org.junit.jupiter.api.*;
 import server.Server;
+import ui.ClientException;
 
 
 public class ServerFacadeTests {
@@ -28,11 +29,16 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void registerSuccess() throws Exception {
+    void registerSuccess() throws ClientException {
         var authData = facade.register("player1", "password", "p1@email.com");
 
         Assertions.assertNotNull(authData);
         Assertions.assertTrue(authData.authToken().length() > 10);
+    }
+
+    @Test
+    void clearSuccess() throws ClientException {
+        Assertions.assertDoesNotThrow(() -> facade.clear());
     }
 
 }

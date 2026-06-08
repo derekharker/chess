@@ -142,16 +142,17 @@ public class SQLGameDAO implements GameDAO {
         """;
 
         String gameInfo =
-                (String) Translation.fromObjectToJson(gameData.game());
+                (String) Translation.fromObjectToJson(gameData.getGame());
 
         try {
             DatabaseManager.executeUpdate(
                     sql,
-                    gameData.whiteUsername(),
-                    gameData.blackUsername(),
-                    gameData.gameName(),
+                    gameData.getWhiteUsername(),
+                    gameData.getBlackUsername(),
+                    gameData.getGameName(),
                     gameInfo,
-                    gameData.gameID());
+                    gameData.getGameID()
+            );
 
         } catch (DataAccessException e) {
             throw new RuntimeException("Failed to update game", e);

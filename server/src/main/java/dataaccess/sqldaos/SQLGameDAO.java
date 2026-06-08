@@ -129,6 +129,35 @@ public class SQLGameDAO implements GameDAO {
         return new JoinGameResponse(null);
     }
 
+    @Override
+    public void updateGame(GameData gameData) {
+
+        String sql = """
+        UPDATE game
+        SET white_username = ?,
+            black_username = ?,
+            game_name = ?,
+            game_info = ?
+        WHERE game_id = ?
+        """;
+
+        String gameInfo =
+                (String) Translation.fromObjectToJson(gameData.game());
+
+        try {
+            DatabaseManager.executeUpdate(
+                    sql,
+                    gameData.whiteUsername(),
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    gameInfo,
+                    gameData.gameID());
+
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Failed to update game", e);
+        }
+    }
+
     private boolean isEmpty(int gameID, ChessGame.TeamColor teamColor) {
 
         String sql;

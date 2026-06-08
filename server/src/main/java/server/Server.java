@@ -33,11 +33,12 @@ public class Server {
         GameHandler gameHandler = new GameHandler(authDAO, gameDAO);
         ClearHandler clearHandler = new ClearHandler(gameDAO, authDAO, userDAO);
 
-        app.post("/user", userHandler::register);
+        app.post("/user", userHandler::register); //join user
 
         // start the login , logout process
         app.post("/session", sessionHandler::login);
         app.delete("/session", sessionHandler::logout);
+
 
         // list game, create and join it
         app.get("/game", gameHandler::listGames);

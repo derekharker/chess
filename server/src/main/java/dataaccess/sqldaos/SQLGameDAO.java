@@ -59,6 +59,48 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
+    public GameData getGame(int gameID) {
+
+        String sql =
+                "SELECT game_id, white_username, black_username, game_name, game_info " +
+                        "FROM game WHERE game_id = ?";
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, gameID);
+
+            try (var rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+
+                    String whiteUsername = rs.getString("white_username");
+                    String blackUsername = rs.getString("black_username");
+                    String gameName = rs.getString("game_name");
+                    String gameInfo = rs.getString("game_info");
+
+                    ChessGame game =
+                            Translation.fromJsontoObjectNotRequest(
+                                    gameInfo,
+                                    ChessGame.class);
+
+                    return new GameData(
+                            gameID,
+                            whiteUsername,
+                            blackUsername,
+                            gameName,
+                            game);
+                }
+            }
+
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException("Failed to get game", e);
+        }
+
+        return null;
+    }
+
+    @Override
     public JoinGameResponse updateUserInGame(int gameID, String username, ChessGame.TeamColor teamColor) {
 
         if (teamColor != ChessGame.TeamColor.WHITE &&

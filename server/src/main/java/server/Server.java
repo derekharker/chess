@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.sqldaos.SQLAuthDAO;
 import dataaccess.sqldaos.SQLGameDAO;
 import dataaccess.sqldaos.SQLUserDAO;
+import websocket.WebSocketHandler;
 
 import static dataaccess.DatabaseManager.configureDatabase;
 
@@ -26,6 +27,19 @@ public class Server {
         SQLUserDAO userDAO = new SQLUserDAO();
         SQLAuthDAO authDAO = new SQLAuthDAO();
         SQLGameDAO gameDAO = new SQLGameDAO();
+
+        WebSocketHandler wsHandler =
+                new WebSocketHandler(authDAO, gameDAO);
+
+        app.ws("/ws", ws -> {
+
+            ws.onMessage(ctx ->
+                    wsHandler.onMessage(ctx, ctx.message()));
+
+            ws.onClose(ctx ->
+                    wsHandler.onClose(ctx));
+
+        });
 
         UserHandler userHandler = new UserHandler(userDAO, authDAO);
         SessionHandler sessionHandler = new SessionHandler(userDAO, authDAO);

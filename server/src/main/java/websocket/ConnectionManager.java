@@ -1,10 +1,12 @@
 package websocket;
 
+import io.javalin.websocket.WsContext;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
 
-    private final ConcurrentHashMap<String, Connection> connections =
+    private final ConcurrentHashMap<Integer, ConcurrentHashMap<String, WsContext>> games =
             new ConcurrentHashMap<>();
 
     public void add(String username, Connection connection) {

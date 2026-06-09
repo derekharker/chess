@@ -31,7 +31,7 @@ public class WebSocketHandler {
             case CONNECT -> connect(ctx, command);
             case MAKE_MOVE -> {
             }
-            case LEAVE -> {
+            case LEAVE -> { leave(ctx, command);
             }
             case RESIGN -> {
             }
@@ -67,6 +67,46 @@ public class WebSocketHandler {
         String message = username + " joined the game";
         for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
             other.send(gson.toJson(new NotificationMessage(message)));
+        }
+    }
+
+    private void leave(WsContext ctx, UserGameCommand command) {
+
+        try {
+            if (!authDAO.isVerifiedAuth(command.getAuthToken())) {
+                ctx.send(gson.toJson(new ErrorMessage("Error: invalid auth token")));
+                return;
+            }
+            String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+            GameData game = gameDAO.getGame(command.getGameID());
+
+            if (game == null) {
+                ctx.send(gson.toJson(new ErrorMessage("Error: game not found")));
+                return;
+            }
+
+            if (username.equals(game.getWhiteUsername())) {
+                game.setWhiteUsername(null);
+            }
+
+            if (username.equals(game.getBlackUsername())) {
+                game.setBlackUsername(null);
+            }
+
+            gameDAO.updateGame(game);
+            connections.remove(command.getGameID(), username);
+
+            NotificationMessage notification = new NotificationMessage(username + " left the game");
+
+            String json = gson.toJson(notification); // json context changer
+            for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
+                other.send(json);
+            }
+
+        } catch (Exception ex) {
+
+            ctx.send(gson.toJson(
+                    new ErrorMessage("Error: " + ex.getMessage())));
         }
     }
 }

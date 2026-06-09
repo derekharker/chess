@@ -98,4 +98,14 @@ public class MemoryGame implements GameDAO {
 
         return id;
     }
+
+    @Override
+    public void updateGame(GameData gameData) { //need to update here
+
+    }
+
+    @Override
+    public GameData getGame(int gameID) { //need finishing
+        return null;
+    }
 }

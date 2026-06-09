@@ -64,7 +64,18 @@ public class WebSocketHandler {
 
         ctx.send(gson.toJson(new LoadGameMessage(game)));
 
-        String message = username + " joined the game";
+        String message; //more specific notification to all players
+
+        if (username.equals(game.getWhiteUsername())) {
+            message = username + " connected as WHITE";
+        }
+        else if (username.equals(game.getBlackUsername())) {
+            message = username + " connected as BLACK";
+        }
+        else {
+            message = username + " connected as an observer";
+        }
+
         for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
             other.send(gson.toJson(new NotificationMessage(message)));
         }

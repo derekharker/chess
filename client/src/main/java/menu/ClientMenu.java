@@ -1,6 +1,7 @@
 package menu;
 
 import client.ServerFacade;
+import client.WebSocketFacade;
 import model.AuthData;
 import model.GameData;
 import ui.ClientException;
@@ -19,6 +20,9 @@ public class ClientMenu {
 
     private List<GameData> lastGames = new ArrayList<>();
     private final BoardPrinter boardPrinter = new BoardPrinter();
+
+    private WebSocketFacade webSocket;
+    private Integer currentGameID;
 
     public ClientMenu(int port) {
         facade = new ServerFacade(port);

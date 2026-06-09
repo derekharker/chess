@@ -6,6 +6,7 @@ import model.AuthData;
 import model.GameData;
 import ui.ClientException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ public class ClientMenu {
     private String authToken;
     private String username;
     private boolean loggedIn = false;
+    private final int port;
 
     private List<GameData> lastGames = new ArrayList<>();
     private final BoardPrinter boardPrinter = new BoardPrinter();
@@ -26,6 +28,7 @@ public class ClientMenu {
     private Integer currentGameID;
 
     public ClientMenu(int port) {
+        this.port = port;
         facade = new ServerFacade(port);
     }
 
@@ -194,7 +197,7 @@ public class ClientMenu {
         facade.joinGame(authToken, game.getGameID(), color);
 
         currentGameID = game.getGameID();
-        webSocket = new WebSocketFacade("http://localhost:8080");
+        webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 
         String board = color.equals("BLACK")
@@ -204,7 +207,7 @@ public class ClientMenu {
         return "Joined " + game.getGameName() + " as " + color + "\n\n" + board;
     }
 
-    private String observeCommand(String[] tokens) {
+    private String observeCommand(String[] tokens) throws ClientException {
         if (tokens.length != 2) {
             return "Usage: observe <game number>";
         }
@@ -212,7 +215,7 @@ public class ClientMenu {
         GameData game = getGameFromListNumber(listNumber);
         //return string for user
         currentGameID = game.getGameID();
-        webSocket = new WebSocketFacade("http://localhost:8080");
+        webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 //same as joincommand
         return "Observing " + game.getGameName();
@@ -242,5 +245,9 @@ public class ClientMenu {
         }
 
         return player;
+    }
+
+    private void handleServerMessage(ServerMessage message) {
+        System.out.println("Received: " + message.getServerMessageType());
     }
 }

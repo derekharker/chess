@@ -28,17 +28,11 @@ public class Server {
         SQLAuthDAO authDAO = new SQLAuthDAO();
         SQLGameDAO gameDAO = new SQLGameDAO();
 
-        WebSocketHandler wsHandler =
-                new WebSocketHandler(authDAO, gameDAO);
+        WebSocketHandler wsHandler = new WebSocketHandler(authDAO, gameDAO);
 
         app.ws("/ws", ws -> {
-
-            ws.onMessage(ctx ->
-                    wsHandler.onMessage(ctx, ctx.message()));
-
-            ws.onClose(ctx ->
-                    wsHandler.onClose(ctx));
-
+            ws.onMessage(ctx -> wsHandler.onMessage(ctx, ctx.message()));
+            ws.onClose(wsHandler::onClose);
         });
 
         UserHandler userHandler = new UserHandler(userDAO, authDAO);

@@ -8,6 +8,7 @@ import model.GameData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 
 public class WebSocketHandler {
 
@@ -37,27 +38,35 @@ public class WebSocketHandler {
         }
     }
 
+    public void onClose(WsContext ctx) {
+        String username = connections.getUsername(ctx);
+        Integer gameID = connections.getGameID(ctx);
+
+        if (username != null && gameID != null) {
+            connections.remove(gameID, username);
+        }
+    }
+
     private void connect(WsContext ctx, UserGameCommand command) {
-        try {
-            if (!authDAO.isVerifiedAuth(command.getAuthToken())) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: invalid auth token")));
-                return;
-            }
+        if (!authDAO.isVerifiedAuth(command.getAuthToken())) {
+            ctx.send(gson.toJson(new ErrorMessage("Error: invalid auth token")));
+            return;
+        }
 
-            GameData game = gameDAO.getGame(command.getGameID());
-            if (game == null) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: game does not exist")));
-                return;
-            }
+        GameData game = gameDAO.getGame(command.getGameID());
+        if (game == null) {
+            ctx.send(gson.toJson(new ErrorMessage("Error: game does not exist")));
+            return;
+        }
 
-            String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+        String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+        connections.add(command.getGameID(), username, ctx);
 
-            connections.add(username, new Connection(username, command.getGameID(), ctx));
-            ctx.send(gson.toJson(new LoadGameMessage(game)));
+        ctx.send(gson.toJson(new LoadGameMessage(game)));
 
-        } //exceptions for auth token error
-        catch (Exception ex) {
-            ctx.send(gson.toJson(new ErrorMessage("Error: " + ex.getMessage())));
+        String message = username + " joined the game";
+        for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
+            other.send(gson.toJson(new NotificationMessage(message)));
         }
     }
 }

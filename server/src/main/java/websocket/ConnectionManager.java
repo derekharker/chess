@@ -41,4 +41,31 @@ public class ConnectionManager {
                 .map(java.util.Map.Entry::getValue)
                 .toList();
     }
+
+    //finding ctx of game and returning username heree
+    public String getUsername(WsContext ctx) {
+
+        for (var game : games.values()) {
+            for (var entry : game.entrySet()) {
+                if (entry.getValue().equals(ctx)) {
+                    return entry.getKey();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Integer getGameID(WsContext ctx) {
+
+        for (var entry : games.entrySet()) {
+            for (var session : entry.getValue().values()) {
+                if (session.equals(ctx)) {
+                    return entry.getKey();
+                }
+            }
+        }
+
+        return null;
+    }
 }

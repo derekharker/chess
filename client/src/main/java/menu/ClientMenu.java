@@ -5,6 +5,7 @@ import client.WebSocketFacade;
 import model.AuthData;
 import model.GameData;
 import ui.ClientException;
+import websocket.commands.UserGameCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,7 +190,12 @@ public class ClientMenu {
         }
 
         GameData game = getGameFromListNumber(listNumber);
+        //now with actual joining of games
         facade.joinGame(authToken, game.getGameID(), color);
+
+        currentGameID = game.getGameID();
+        webSocket = new WebSocketFacade("http://localhost:8080");
+        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 
         String board = color.equals("BLACK")
                 ? boardPrinter.drawBlackBoard()
@@ -205,7 +211,11 @@ public class ClientMenu {
         int listNumber = parseGameNumber(tokens[1]);
         GameData game = getGameFromListNumber(listNumber);
         //return string for user
-        return "Observing " + game.getGameName() + "\n\n" + boardPrinter.drawWhiteBoard();
+        currentGameID = game.getGameID();
+        webSocket = new WebSocketFacade("http://localhost:8080");
+        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
+//same as joincommand
+        return "Observing " + game.getGameName();
     }
 
     private int parseGameNumber(String text) {

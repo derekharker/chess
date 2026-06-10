@@ -6,6 +6,7 @@ public class ChessGame {
 
     private TeamColor currentTurn = TeamColor.WHITE;
     private ChessBoard board = new ChessBoard();
+    private boolean gameOver = false;
 
     public ChessGame() {
         board.resetBoard();
@@ -18,6 +19,14 @@ public class ChessGame {
 
     public TeamColor getTeamTurn() {
         return currentTurn;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
     public void setTeamTurn(TeamColor team) {

@@ -27,7 +27,7 @@ public class ConnectionManager {
 
     public Collection<WsContext> getGameConnections(int gameID) {
         ConcurrentHashMap<String, WsContext> gameConnections = games.get(gameID);
-        return gameConnections == null ? null : gameConnections.values();
+        return gameConnections == null ? java.util.List.of() : gameConnections.values();
     }
 
     public Collection<WsContext> getOtherConnections(int gameID, String username) {

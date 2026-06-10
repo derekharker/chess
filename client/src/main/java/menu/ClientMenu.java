@@ -98,7 +98,7 @@ public class ClientMenu {
 
         webSocket.sendCommand(new MakeMoveCommand(authToken, currentGameID, move));
 
-        return "Move sent.";
+        return "";
     }
 
     private ChessPosition parsePosition(String square) {

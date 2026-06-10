@@ -27,7 +27,8 @@ public class WebSocketFacade extends Endpoint {
         this.messageHandler = messageHandler;
         serverUrl = serverUrl.replace("http", "ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        this.session = container.connectToServer(this, URI.create(serverUrl + "/ws"));
+        jakarta.websocket.ClientEndpointConfig config = jakarta.websocket.ClientEndpointConfig.Builder.create().build();
+        this.session = container.connectToServer(this, config, URI.create(serverUrl + "/ws"));
     }
 
     @Override
@@ -35,13 +36,15 @@ public class WebSocketFacade extends Endpoint {
         this.session = session;
 
         session.addMessageHandler(String.class, message -> {
+            System.out.println("RAW WS MESSAGE: " + message);
+
             JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
             String type = obj.get("serverMessageType").getAsString();
 
             ServerMessage parsed = switch (type) {
                 case "LOAD_GAME" -> gson.fromJson(message, LoadGameMessage.class);
                 case "NOTIFICATION" -> gson.fromJson(message, NotificationMessage.class);
-                case "ERROR" -> gson.fromJson(message, ErrorMessage.class);//different messages for each not just server
+                case "ERROR" -> gson.fromJson(message, ErrorMessage.class);
                 default -> gson.fromJson(message, ServerMessage.class);
             };
 
@@ -57,5 +60,10 @@ public class WebSocketFacade extends Endpoint {
         if (session != null && session.isOpen()) {
             session.close();
         }
+    }
+
+    @Override
+    public void onError(Session session, Throwable throwable) {
+        System.out.println("WebSocket error: " + throwable.getMessage());
     }
 }

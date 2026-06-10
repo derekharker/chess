@@ -63,7 +63,7 @@ public class ClientMenu {
         } catch (ClientException e) {
             return e.getMessage();
         } catch (Exception e) {
-            return "Something went wrong. Please try again.";
+            return "Something went wrong, " + e.getMessage();
         }
     }
 
@@ -130,8 +130,8 @@ public class ClientMenu {
     }
 
     private String redrawBoard() {
-        if (currentGame == null) {
-            return "No game loaded.";
+        if (currentGame == null || currentGame.getGame() == null) {
+            return "No game loaded yet.";
         }
 
         if ("BLACK".equals(playerColor)) {
@@ -301,37 +301,62 @@ public class ClientMenu {
         }
 
         GameData game = getGameFromListNumber(listNumber);
-        //now with actual joining of games
+
         facade.joinGame(authToken, game.getGameID(), color);
 
+        try {
+            WebSocketFacade newWebSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
+            newWebSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, game.getGameID()));
 
-        currentGameID = game.getGameID();
-        currentGame = game;
-        playerColor = color;
-        inGame = true;
+            webSocket = newWebSocket;
+            currentGameID = game.getGameID();
+            currentGame = game;
+            playerColor = color;
+            inGame = true;
 
-        webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
-        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
+            return "Joined " + game.getGameName() + " as " + color;
 
-        return "Joined " + game.getGameName() + " as " + color + ".";
+        } catch (Exception e) {
+            e.printStackTrace();
+            webSocket = null;
+            currentGameID = null;
+            currentGame = null;
+            playerColor = null;
+            inGame = false;
+
+            return "Joined the game, but could not connect to gameplay." + e.getMessage();
+        }
     }
 
     private String observeCommand(String[] tokens) throws Exception {
         if (tokens.length != 2) {
             return "Usage: observe <game number>";
         }
+
         int listNumber = parseGameNumber(tokens[1]);
         GameData game = getGameFromListNumber(listNumber);
-        //return string for user
-        currentGameID = game.getGameID();
-        currentGame = game;
-        playerColor = "OBSERVER";
-        inGame = true;
 
-        webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
-        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
-//same as joincommand
-        return "Observing " + game.getGameName();
+        try {
+            WebSocketFacade newWebSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
+            newWebSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, game.getGameID()));
+
+            webSocket = newWebSocket;
+            currentGameID = game.getGameID();
+            currentGame = game;
+            playerColor = "OBSERVER";
+            inGame = true;
+
+            return "Observing " + game.getGameName();
+
+        } catch (Exception e) {
+            webSocket = null;
+            currentGameID = null;
+            currentGame = null;
+            playerColor = null;
+            inGame = false;
+
+            return "Could not connect to gameplay.";
+        }
     }
 
     private int parseGameNumber(String text) {

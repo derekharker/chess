@@ -4,51 +4,55 @@ import io.javalin.websocket.WsContext;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConnectionManager {
 
-    private final ConcurrentHashMap<Integer, ConcurrentHashMap<String, WsContext>> games =
+    private final ConcurrentHashMap<Integer, Collection<Connection>> games =
             new ConcurrentHashMap<>();
 
     public void add(int gameID, String username, WsContext ctx) {
-        games.computeIfAbsent(gameID, id -> new ConcurrentHashMap<>())
-                .put(username, ctx);
+        Connection connection = new Connection(username, gameID, ctx);
+
+        games.computeIfAbsent(gameID, id -> new CopyOnWriteArrayList<>())
+                .add(connection);
     }
 
-    public void remove(int gameID, String username) {
-        ConcurrentHashMap<String, WsContext> gameConnections = games.get(gameID);
-        if (gameConnections != null) {
-            gameConnections.remove(username);
+    public void remove(WsContext ctx) {
+        for (var entry : games.entrySet()) {
+            Collection<Connection> gameConnections = entry.getValue();
+
+            gameConnections.removeIf(connection ->
+                    connection.getSession().equals(ctx));
+
             if (gameConnections.isEmpty()) {
-                games.remove(gameID);
+                games.remove(entry.getKey());
             }
         }
     }
 
-    public Collection<WsContext> getGameConnections(int gameID) {
-        ConcurrentHashMap<String, WsContext> gameConnections = games.get(gameID);
-        return gameConnections == null ? java.util.List.of() : gameConnections.values();
+    public Collection<Connection> getGameConnections(int gameID) {
+        Collection<Connection> gameConnections = games.get(gameID);
+        return gameConnections == null ? java.util.List.of() : gameConnections;
     }
 
-    public Collection<WsContext> getOtherConnections(int gameID, String username) {
-        ConcurrentHashMap<String, WsContext> gameConnections = games.get(gameID);
+    public Collection<Connection> getOtherConnections(int gameID, WsContext ctx) {
+        Collection<Connection> gameConnections = games.get(gameID);
+
         if (gameConnections == null) {
             return java.util.List.of();
         }
 
-        return gameConnections.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(username))
-                .map(java.util.Map.Entry::getValue)
+        return gameConnections.stream()
+                .filter(connection -> !connection.getSession().equals(ctx))
                 .toList();
     }
 
-    //finding ctx of game and returning username heree
     public String getUsername(WsContext ctx) {
-
         for (var game : games.values()) {
-            for (var entry : game.entrySet()) {
-                if (entry.getValue().equals(ctx)) {
-                    return entry.getKey();
+            for (var connection : game) {
+                if (connection.getSession().equals(ctx)) {
+                    return connection.getUsername();
                 }
             }
         }
@@ -57,10 +61,9 @@ public class ConnectionManager {
     }
 
     public Integer getGameID(WsContext ctx) {
-
         for (var entry : games.entrySet()) {
-            for (var session : entry.getValue().values()) {
-                if (session.equals(ctx)) {
+            for (var connection : entry.getValue()) {
+                if (connection.getSession().equals(ctx)) {
                     return entry.getKey();
                 }
             }

@@ -9,6 +9,8 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.commands.MakeMoveCommand;
+import chess.*;
 
 public class WebSocketHandler {
 
@@ -29,7 +31,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
 
             case CONNECT -> connect(ctx, command);
-            case MAKE_MOVE -> {
+            case MAKE_MOVE -> { makeMove(ctx, gson.fromJson(message, MakeMoveCommand.class));
             }
             case LEAVE -> { leave(ctx, command);
             }
@@ -44,6 +46,54 @@ public class WebSocketHandler {
 
         if (username != null && gameID != null) {
             connections.remove(gameID, username);
+        }
+    }
+
+    private void makeMove(WsContext ctx, MakeMoveCommand command) {
+
+        try {
+            if (!authDAO.isVerifiedAuth(command.getAuthToken())) {
+                sendError(ctx, "Error: invalid auth token");
+                return;
+            }
+
+            String username = authDAO.getUsernameFromAuth(command.getAuthToken());
+            GameData gameData = gameDAO.getGame(command.getGameID());
+
+            if (gameData == null) {
+                sendError(ctx, "Error: game not found");
+                return;
+            }
+
+            ChessGame game = gameData.getGame();
+            ChessGame.TeamColor playerColor = getPlayerColor(username, gameData);
+
+            if (playerColor == null) {
+                sendError(ctx, "Error: observers cannot move");
+                return;
+            }
+
+            if (game.isGameOver()) {
+                sendError(ctx, "Error: game is over");
+                return;
+            }
+
+            if (game.getTeamTurn() != playerColor) {
+                sendError(ctx, "Error: not your turn");
+                return;
+            }
+
+            ChessMove move = command.getMove();
+            game.makeMove(move);
+            gameDAO.updateGame(gameData);
+
+            sendToGame(command.getGameID(), new LoadGameMessage(gameData));
+            sendToOthers(command.getGameID(), username, new NotificationMessage(username + " made a move"));
+
+            sendGameStatusMessages(command.getGameID(), game, playerColor);
+
+        } catch (Exception ex) {
+            sendError(ctx, "Error: " + ex.getMessage());
         }
     }
 

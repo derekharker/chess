@@ -56,7 +56,6 @@ public class WebSocketHandler {
                 sendError(ctx, "Error: invalid auth token");
                 return;
             }
-
             String username = authDAO.getUsernameFromAuth(command.getAuthToken());
             GameData gameData = gameDAO.getGame(command.getGameID());
 
@@ -72,12 +71,10 @@ public class WebSocketHandler {
                 sendError(ctx, "Error: observers cannot move");
                 return;
             }
-
             if (game.isGameOver()) {
                 sendError(ctx, "Error: game is over");
                 return;
             }
-
             if (game.getTeamTurn() != playerColor) {
                 sendError(ctx, "Error: not your turn");
                 return;
@@ -96,6 +93,21 @@ public class WebSocketHandler {
             sendError(ctx, "Error: " + ex.getMessage());
         }
     }
+
+    private ChessGame.TeamColor getPlayerColor(String username, GameData gameData) {
+        if (username.equals(gameData.getWhiteUsername())) {
+            return ChessGame.TeamColor.WHITE;}
+        if (username.equals(gameData.getBlackUsername())) {
+            return ChessGame.TeamColor.BLACK;
+        }
+        return null;
+    }
+
+    private void sendError(WsContext ctx, String message) {
+        ctx.send(gson.toJson(new ErrorMessage(message)));
+    }
+
+
 
     private void resign(WsContext ctx, UserGameCommand command) {
 

@@ -61,8 +61,38 @@ public class ClientMenu {
         }
     }
 
-    private String evalGameplay(String line) throws ClientException {
-        return "here";
+    private String evalGameplay(String line) throws Exception {
+        var tokens = line.trim().split("\\s+");
+        var command = tokens[0].toLowerCase();
+
+        return switch (command) {
+            case "help" -> gameplayHelp();
+            case "redraw" -> redrawBoard();
+            case "leave" -> leaveGame();
+            case "resign" -> resignGame();
+            case "move" -> "Move command coming next.";
+            case "highlight" -> "Highlight command coming next.";
+            default -> "Unknown command.\n\n" + gameplayHelp();
+        };
+    }
+
+    private String gameplayHelp() {
+        return """
+            redraw - redraw the chess board
+            move <FROM> <TO> - move a piece, example: move e2 e4
+            highlight <SQUARE> - highlight legal moves, example: highlight e2
+            resign - resign the game
+            leave - leave the game
+            help - show possible commands
+            """;
+    }
+
+    private String redrawBoard() {
+        if ("BLACK".equals(playerColor)) {
+            return boardPrinter.drawBlackBoard();
+        }
+
+        return boardPrinter.drawWhiteBoard();
     }
 
     private String evalPreLogin(String line) throws ClientException {
@@ -78,7 +108,7 @@ public class ClientMenu {
         };
     }
 
-    private String evalPostLogin(String line) throws ClientException {
+    private String evalPostLogin(String line) throws Exception {
         var tokens = line.trim().split("\\s+");
         var command = tokens[0].toLowerCase();
 
@@ -191,7 +221,7 @@ public class ClientMenu {
         return result.toString();
     }
 
-    private String joinCommand(String[] tokens) throws ClientException {
+    private String joinCommand(String[] tokens) throws Exception {
         if (tokens.length != 3) {
             return "Usage: join <game number> <WHITE|BLACK>";
         }
@@ -223,7 +253,7 @@ public class ClientMenu {
         return "Joined " + game.getGameName() + " as " + color + "\n\n" + board;
     }
 
-    private String observeCommand(String[] tokens) throws ClientException {
+    private String observeCommand(String[] tokens) throws Exception {
         if (tokens.length != 2) {
             return "Usage: observe <game number>";
         }

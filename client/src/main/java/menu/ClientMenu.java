@@ -77,7 +77,7 @@ public class ClientMenu {
             case "leave" -> leaveGame();
             case "resign" -> resignGame();
             case "move" -> movePiece(tokens);
-            case "highlight" -> "Highlight command coming next.";
+            case "highlight" -> highlightMoves(tokens);
             default -> "Unknown command.\n\n" + gameplayHelp();
         };
     }
@@ -99,6 +99,41 @@ public class ClientMenu {
         webSocket.sendCommand(new MakeMoveCommand(authToken, currentGameID, move));
 
         return "";
+    }
+
+    private String highlightMoves(String[] tokens) {
+        if (tokens.length != 2) {
+            return "Usage: highlight <SQUARE>, example: highlight e2";
+        }
+
+        if (currentGame == null || currentGame.getGame() == null) {
+            return "No game loaded yet.";
+        }
+
+        ChessPosition start = parsePosition(tokens[1]);
+
+        ChessPiece piece = currentGame.getGame().getBoard().getPiece(start);
+        if (piece == null) {
+            return "No piece at " + tokens[1] + ".";
+        }
+
+        Collection<ChessMove> moves = currentGame.getGame().validMoves(start);
+        if (moves == null || moves.isEmpty()) {
+            return "No legal moves for " + tokens[1] + ".";
+        }
+
+        List<ChessPosition> highlightedSquares = new ArrayList<>();
+        highlightedSquares.add(start);
+
+        for (ChessMove move : moves) {
+            highlightedSquares.add(move.getEndPosition());
+        }
+
+        if ("BLACK".equals(playerColor)) {
+            return boardPrinter.drawBlackBoard(currentGame.getGame(), highlightedSquares);
+        }
+
+        return boardPrinter.drawWhiteBoard(currentGame.getGame(), highlightedSquares);
     }
 
     private ChessPosition parsePosition(String square) {

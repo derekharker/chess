@@ -3,6 +3,7 @@ package menu;
 import chess.*;
 
 import static ui.EscapeSequences.*;
+import java.util.Collection;
 
 public class BoardPrinter {
     public String drawWhiteBoard() {
@@ -19,6 +20,14 @@ public class BoardPrinter {
 
     public String drawBlackBoard(ChessGame game) {
         return drawBoard(game, false);
+    }
+
+    public String drawWhiteBoard(ChessGame game, Collection<ChessPosition> highlightedSquares) {
+        return drawBoard(game, true, highlightedSquares);
+    }
+
+    public String drawBlackBoard(ChessGame game, Collection<ChessPosition> highlightedSquares) {
+        return drawBoard(game, false, highlightedSquares);
     }
 
     private String drawBoard(boolean whitePersp) {
@@ -77,6 +86,46 @@ public class BoardPrinter {
                 boolean lightSquare = isLightSquare(fileChar, rank);
 
                 board.append(squareBackground(lightSquare));
+                board.append(pieceTextColor(game, fileChar, rank));
+                board.append(pieceAt(game, fileChar, rank));
+                board.append(RESET_TEXT_COLOR);
+                board.append(RESET_BG_COLOR);
+            }
+
+            board.append(" ").append(rank).append("\n");
+        }
+
+        addColumnLabels(board, files);
+        return board.toString();
+    }
+
+    private String drawBoard(ChessGame game, boolean whitePersp, Collection<ChessPosition> highlightedSquares) {
+        StringBuilder board = new StringBuilder();
+
+        String[] files = whitePersp
+                ? new String[]{"a", "b", "c", "d", "e", "f", "g", "h"}
+                : new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
+
+        int startColumn = whitePersp ? 8 : 1;
+        int endColumn = whitePersp ? 1 : 8;
+        int step = whitePersp ? -1 : 1;
+
+        addColumnLabels(board, files);
+
+        for (int rank = startColumn; whitePersp ? rank >= endColumn : rank <= endColumn; rank += step) {
+            board.append(" ").append(rank).append(" ");
+
+            for (String file : files) {
+                char fileChar = file.charAt(0);
+                boolean lightSquare = isLightSquare(fileChar, rank);
+                ChessPosition position = new ChessPosition(rank, fileChar - 'a' + 1);
+
+                if (isHighlighted(position, highlightedSquares)) {
+                    board.append(SET_BG_COLOR_YELLOW);
+                } else {
+                    board.append(squareBackground(lightSquare));
+                }
+
                 board.append(pieceTextColor(game, fileChar, rank));
                 board.append(pieceAt(game, fileChar, rank));
                 board.append(RESET_TEXT_COLOR);

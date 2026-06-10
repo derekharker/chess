@@ -11,6 +11,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.commands.MakeMoveCommand;
 import chess.*;
+import websocket.messages.ServerMessage;
 
 public class WebSocketHandler {
 
@@ -107,7 +108,35 @@ public class WebSocketHandler {
         ctx.send(gson.toJson(new ErrorMessage(message)));
     }
 
+    private void sendToGame(int gameID, ServerMessage message) {
+        String json = gson.toJson(message);
 
+        for (WsContext session : connections.getGameConnections(gameID)) {
+            session.send(json);
+        }
+    }
+
+    private void sendGameStatusMessages(int gameID, ChessGame game, ChessGame.TeamColor playerColor) {
+        ChessGame.TeamColor opponent = playerColor == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+
+        if (game.isInCheckmate(opponent)) {
+            game.setGameOver(true);
+            sendToGame(gameID, new NotificationMessage(opponent + " is in checkmate"));
+        } else if (game.isInStalemate(opponent)) {
+            game.setGameOver(true);
+            sendToGame(gameID, new NotificationMessage(opponent + " is in stalemate"));
+        } else if (game.isInCheck(opponent)) {
+            sendToGame(gameID, new NotificationMessage(opponent + " is in check"));
+        }
+    }
+
+    private void sendToOthers(int gameID, String username, ServerMessage message) {
+        String json = gson.toJson(message);
+
+        for (WsContext session : connections.getOtherConnections(gameID, username)) {
+            session.send(json);
+        }
+    }
 
     private void resign(WsContext ctx, UserGameCommand command) {
 

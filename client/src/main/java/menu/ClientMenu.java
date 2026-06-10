@@ -95,6 +95,27 @@ public class ClientMenu {
         return boardPrinter.drawWhiteBoard();
     }
 
+    private String leaveGame() throws Exception {
+        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID));
+
+        inGame = false;
+        currentGameID = null;
+        currentGame = null;
+        playerColor = null;
+
+        if (webSocket != null) {
+            webSocket.close();
+            webSocket = null;
+        }
+
+        return "Left the game.";
+    }
+
+    private String resignGame() throws Exception {
+        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID));
+        return "Resigned game";
+    }
+
     private String evalPreLogin(String line) throws ClientException {
         var tokens = line.trim().split("\\s+");
         var command = tokens[0].toLowerCase();

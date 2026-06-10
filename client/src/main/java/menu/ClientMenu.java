@@ -27,6 +27,8 @@ public class ClientMenu {
     private WebSocketFacade webSocket;
     private Integer currentGameID;
 
+    private boolean inGame = false;
+
     public ClientMenu(int port) {
         this.port = port;
         facade = new ServerFacade(port);
@@ -42,7 +44,10 @@ public class ClientMenu {
         }
 
         try {
-            if (loggedIn) {
+            if (inGame) {
+                return evalGameplay(line);
+            }
+            else if (loggedIn) {
                 return evalPostLogin(line);
             } else {
                 return evalPreLogin(line);
@@ -52,6 +57,10 @@ public class ClientMenu {
         } catch (Exception e) {
             return "Something went wrong. Please try again.";
         }
+    }
+
+    private String evalGameplay(String line) throws ClientException {
+        return "here";
     }
 
     private String evalPreLogin(String line) throws ClientException {

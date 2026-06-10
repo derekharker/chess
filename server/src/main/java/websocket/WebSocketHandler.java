@@ -138,7 +138,7 @@ public class WebSocketHandler {
         try {
 
             if (!authDAO.isVerifiedAuth(command.getAuthToken())) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: invalid auth token")));
+                sendError(ctx, "Error: invalid auth token");
                 return;
             }
 
@@ -146,31 +146,28 @@ public class WebSocketHandler {
             GameData gameData = gameDAO.getGame(command.getGameID());
 
             if (gameData == null) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: game not found")));
+                sendError(ctx, "Error: game not found");
                 return;
             }
 
-            if (!username.equals(gameData.getWhiteUsername()) && !username.equals(gameData.getBlackUsername())) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: only players can resign")));
+            if (!username.equals(gameData.getWhiteUsername()) &&
+                    !username.equals(gameData.getBlackUsername())) {
+                sendError(ctx, "Error: only players can resign");
                 return;
             }
 
             if (gameData.getGame().isGameOver()) {
-                ctx.send(gson.toJson(new ErrorMessage("Error: game is already over")));
+                sendError(ctx, "Error: game is already over");
                 return;
             }
 
             gameData.getGame().setGameOver(true);
             gameDAO.updateGame(gameData);
 
-            String json = gson.toJson(new NotificationMessage(username + " resigned"));
-
-            for (WsContext session : connections.getGameConnections(command.getGameID())) {
-                session.send(json);
-            }
+            sendToGame(command.getGameID(), new NotificationMessage(username + " resigned"));
 
         } catch (Exception ex) {
-            ctx.send(gson.toJson(new ErrorMessage("Error: " + ex.getMessage())));
+            sendError(ctx, "Error: " + ex.getMessage());
         }
     }
 

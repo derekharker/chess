@@ -35,6 +35,8 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
         this.session = session;
 
+        session.setMaxIdleTimeout(0); //testing
+
         session.addMessageHandler(String.class, message -> {
 //got rid of debug print
             JsonObject obj = JsonParser.parseString(message).getAsJsonObject();

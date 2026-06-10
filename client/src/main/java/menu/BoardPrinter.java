@@ -139,6 +139,10 @@ public class BoardPrinter {
         return board.toString();
     }
 
+    private boolean isHighlighted(ChessPosition position, Collection<ChessPosition> highlightedSquares) {
+        return highlightedSquares != null && highlightedSquares.contains(position);
+    }
+
     private void addColumnLabels(StringBuilder board, String[] files) {
         board.append("   ");
         for (String file : files) {

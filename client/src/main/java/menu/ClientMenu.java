@@ -28,6 +28,8 @@ public class ClientMenu {
     private Integer currentGameID;
 
     private boolean inGame = false;
+    private String playerColor;
+    private GameData currentGame;
 
     public ClientMenu(int port) {
         this.port = port;
@@ -205,7 +207,12 @@ public class ClientMenu {
         //now with actual joining of games
         facade.joinGame(authToken, game.getGameID(), color);
 
+
         currentGameID = game.getGameID();
+        currentGame = game;
+        playerColor = color;
+        inGame = true;
+
         webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 
@@ -224,6 +231,10 @@ public class ClientMenu {
         GameData game = getGameFromListNumber(listNumber);
         //return string for user
         currentGameID = game.getGameID();
+        currentGame = game;
+        playerColor = "OBSERVER";
+        inGame = true;
+
         webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 //same as joincommand

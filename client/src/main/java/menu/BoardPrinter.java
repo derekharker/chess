@@ -56,6 +56,40 @@ public class BoardPrinter {
         return board.toString();
     }
 
+    private String drawBoard(ChessGame game, boolean whitePersp) {
+        StringBuilder board = new StringBuilder();
+
+        String[] files = whitePersp
+                ? new String[]{"a", "b", "c", "d", "e", "f", "g", "h"}
+                : new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
+
+        int startColumn = whitePersp ? 8 : 1;
+        int endColumn = whitePersp ? 1 : 8;
+        int step = whitePersp ? -1 : 1;
+
+        addColumnLabels(board, files);
+
+        for (int rank = startColumn; whitePersp ? rank >= endColumn : rank <= endColumn; rank += step) {
+            board.append(" ").append(rank).append(" ");
+
+            for (String file : files) {
+                char fileChar = file.charAt(0);
+                boolean lightSquare = isLightSquare(fileChar, rank);
+
+                board.append(squareBackground(lightSquare));
+                board.append(pieceTextColor(game, fileChar, rank));
+                board.append(pieceAt(game, fileChar, rank));
+                board.append(RESET_TEXT_COLOR);
+                board.append(RESET_BG_COLOR);
+            }
+
+            board.append(" ").append(rank).append("\n");
+        }
+
+        addColumnLabels(board, files);
+        return board.toString();
+    }
+
     private void addColumnLabels(StringBuilder board, String[] files) {
         board.append("   ");
         for (String file : files) {
@@ -78,6 +112,16 @@ public class BoardPrinter {
         return isWhitePiece(piece) ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK;
     }
 
+    private String pieceTextColor(ChessGame game, char file, int rank) {
+        String piece = pieceAt(game, file, rank);
+
+        if (piece.isBlank()) {
+            return SET_TEXT_COLOR_WHITE;
+        }
+
+        return isWhitePiece(piece) ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK;
+    }
+
     private boolean isWhitePiece(String piece) {
         return piece.equals(WHITE_KING) ||
                 piece.equals(WHITE_QUEEN) || piece.equals(WHITE_BISHOP) || piece.equals(WHITE_KNIGHT) ||
@@ -91,7 +135,7 @@ public class BoardPrinter {
         return (rowNumber + i) % 2 == 1;
     }
 
-    private String pieceAt(ChessGame game, char file, int rank) {
+    private String pieceAt(char file, int rank) {
         if (rank == 2) {
             return WHITE_PAWN;
         }
@@ -123,5 +167,26 @@ public class BoardPrinter {
         }
 
         return EMPTY;
+    }
+
+    private String pieceAt(ChessGame game, char file, int rank) {
+        int col = file - 'a' + 1;
+
+        ChessPiece piece = game.getBoard().getPiece(new ChessPosition(rank, col));
+
+        if (piece == null) {
+            return EMPTY;
+        }
+
+        boolean white = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
+
+        return switch (piece.getPieceType()) {
+            case KING -> white ? WHITE_KING : BLACK_KING;
+            case QUEEN -> white ? WHITE_QUEEN : BLACK_QUEEN;
+            case ROOK -> white ? WHITE_ROOK : BLACK_ROOK;
+            case BISHOP -> white ? WHITE_BISHOP : BLACK_BISHOP;
+            case KNIGHT -> white ? WHITE_KNIGHT : BLACK_KNIGHT;
+            case PAWN -> white ? WHITE_PAWN : BLACK_PAWN;
+        };
     }
 }

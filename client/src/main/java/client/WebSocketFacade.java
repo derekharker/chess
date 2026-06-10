@@ -69,4 +69,8 @@ public class WebSocketFacade extends Endpoint {
     public void onError(Session session, Throwable throwable) {
         System.out.println("WebSocket error: " + throwable.getMessage());
     }
+
+    public boolean isOpen() {
+        return session != null && session.isOpen();
+    }
 }

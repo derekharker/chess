@@ -48,6 +48,7 @@ public class ClientCommunication {
 
             var connection = (HttpURLConnection)url.openConnection();
 
+            connection.setConnectTimeout(5000);
             connection.setRequestMethod(method);
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");

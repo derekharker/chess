@@ -96,6 +96,10 @@ public class ClientMenu {
 
         ChessMove move = new ChessMove(start, end, null);
 
+        if (webSocket == null || !webSocket.isOpen()) {
+            return "WebSocket is closed. Leave and rejoin the game.";
+        }
+
         webSocket.sendCommand(new MakeMoveCommand(authToken, currentGameID, move));
 
         return "";
@@ -193,8 +197,12 @@ public class ClientMenu {
     }
 
     private String resignGame() throws Exception {
+        if (webSocket == null || !webSocket.isOpen()) {
+            return "WebSocket is closed. Leave and rejoin the game.";
+        }
+
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID));
-        return "Resigned game";
+        return "";
     }
 
     private String evalPreLogin(String line) throws ClientException {

@@ -26,7 +26,9 @@ public class WebSocketFacade extends Endpoint {
     public WebSocketFacade(String serverUrl, Consumer<ServerMessage> messageHandler) throws Exception {
         this.messageHandler = messageHandler;
         serverUrl = serverUrl.replace("http", "ws");
+
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        container.setDefaultMaxSessionIdleTimeout(0);
         jakarta.websocket.ClientEndpointConfig config = jakarta.websocket.ClientEndpointConfig.Builder.create().build();
         this.session = container.connectToServer(this, config, URI.create(serverUrl + "/ws"));
     }

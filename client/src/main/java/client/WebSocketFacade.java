@@ -36,8 +36,7 @@ public class WebSocketFacade extends Endpoint {
         this.session = session;
 
         session.addMessageHandler(String.class, message -> {
-            System.out.println("RAW WS MESSAGE: " + message);
-
+//got rid of debug print
             JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
             String type = obj.get("serverMessageType").getAsString();
 

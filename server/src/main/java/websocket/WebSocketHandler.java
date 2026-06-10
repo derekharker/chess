@@ -42,12 +42,7 @@ public class WebSocketHandler {
     }
 
     public void onClose(WsContext ctx) {
-        String username = connections.getUsername(ctx);
-        Integer gameID = connections.getGameID(ctx);
-
-        if (username != null && gameID != null) {
-            connections.remove(gameID, username);
-        }
+        connections.remove(ctx);
     }
 
     private void makeMove(WsContext ctx, MakeMoveCommand command) {
@@ -86,7 +81,7 @@ public class WebSocketHandler {
             gameDAO.updateGame(gameData);
 
             sendToGame(command.getGameID(), new LoadGameMessage(gameData));
-            sendToOthers(command.getGameID(), username, new NotificationMessage(username + " made a move"));
+            sendToOthers(command.getGameID(), ctx, new NotificationMessage(username + " made a move"));
 
             sendGameStatusMessages(command.getGameID(), game, playerColor);
 
@@ -111,8 +106,8 @@ public class WebSocketHandler {
     private void sendToGame(int gameID, ServerMessage message) {
         String json = gson.toJson(message);
 
-        for (WsContext session : connections.getGameConnections(gameID)) {
-            session.send(json);
+        for (Connection connection : connections.getGameConnections(gameID)) {
+            connection.getSession().send(json);
         }
     }
 
@@ -130,11 +125,11 @@ public class WebSocketHandler {
         }
     }
 
-    private void sendToOthers(int gameID, String username, ServerMessage message) {
+    private void sendToOthers(int gameID, WsContext ctx, ServerMessage message) {
         String json = gson.toJson(message);
 
-        for (WsContext session : connections.getOtherConnections(gameID, username)) {
-            session.send(json);
+        for (Connection connection : connections.getOtherConnections(gameID, ctx)) {
+            connection.getSession().send(json);
         }
     }
 
@@ -208,9 +203,7 @@ public class WebSocketHandler {
             message = username + " connected as an observer";
         }
 
-        for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
-            other.send(gson.toJson(new NotificationMessage(message)));
-        }
+        sendToOthers(command.getGameID(), ctx, new NotificationMessage(message));
     }
 
     private void leave(WsContext ctx, UserGameCommand command) {
@@ -237,14 +230,10 @@ public class WebSocketHandler {
             }
 
             gameDAO.updateGame(game);
-            connections.remove(command.getGameID(), username);
+            connections.remove(ctx);
 
             NotificationMessage notification = new NotificationMessage(username + " left the game");
-
-            String json = gson.toJson(notification); // json context changer
-            for (WsContext other : connections.getOtherConnections(command.getGameID(), username)) {
-                other.send(json);
-            }
+            sendToGame(command.getGameID(), notification);
 
         } catch (Exception ex) {
 

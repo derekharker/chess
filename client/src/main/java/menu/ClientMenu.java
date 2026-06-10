@@ -7,6 +7,12 @@ import model.GameData;
 import ui.ClientException;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import chess.*;
+
+import websocket.commands.MakeMoveCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,10 +76,46 @@ public class ClientMenu {
             case "redraw" -> redrawBoard();
             case "leave" -> leaveGame();
             case "resign" -> resignGame();
-            case "move" -> "Move command coming next.";
+            case "move" -> movePiece(tokens);
             case "highlight" -> "Highlight command coming next.";
             default -> "Unknown command.\n\n" + gameplayHelp();
         };
+    }
+
+    private String movePiece(String[] tokens) throws Exception {
+        if (tokens.length != 3) {
+            return "Usage: move <FROM> <TO>, example: move e2 e4";
+        }
+
+        if ("OBSERVER".equals(playerColor)) {
+            return "Observers cannot move pieces.";
+        }
+
+        ChessPosition start = parsePosition(tokens[1]);
+        ChessPosition end = parsePosition(tokens[2]);
+
+        ChessMove move = new ChessMove(start, end, null);
+
+        webSocket.sendCommand(new MakeMoveCommand(authToken, currentGameID, move));
+
+        return "Move sent.";
+    }
+
+    private ChessPosition parsePosition(String square) {
+        if (square == null || square.length() != 2) {
+            throw new IllegalArgumentException("Use chess notation like b4.");
+        }
+
+        char file = Character.toLowerCase(square.charAt(0));
+        char rank = square.charAt(1);
+
+        if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
+            throw new IllegalArgumentException("Square must be between a1 and h8.");
+        }
+        int col = file - 'a' + 1;
+        int row = rank - '0';
+
+        return new ChessPosition(row, col);
     }
 
     private String gameplayHelp() {
@@ -267,11 +309,7 @@ public class ClientMenu {
         webSocket = new WebSocketFacade("http://localhost:" + port, this::handleServerMessage);
         webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID));
 
-        String board = color.equals("BLACK")
-                ? boardPrinter.drawBlackBoard()
-                : boardPrinter.drawWhiteBoard();
-
-        return "Joined " + game.getGameName() + " as " + color + "\n\n" + board;
+        return "Joined " + game.getGameName() + " as " + color + ".";
     }
 
     private String observeCommand(String[] tokens) throws Exception {
@@ -319,6 +357,37 @@ public class ClientMenu {
     }
 
     private void handleServerMessage(ServerMessage message) {
-        System.out.println("Received: " + message.getServerMessageType());
+        switch (message.getServerMessageType()) {
+            case LOAD_GAME -> handleLoadGame(message);
+            case NOTIFICATION -> handleNotification(message);
+            case ERROR -> handleError(message);
+        }
     }
+
+    private void handleLoadGame(ServerMessage message) {
+        currentGame = ((LoadGameMessage) message).getGame();
+
+        System.out.println();
+        System.out.println(); //add some more space, UI
+        System.out.println(redrawBoard());
+        System.out.print(">>> ");
+    }
+
+    private void handleNotification(ServerMessage message) {
+        String notification = ((NotificationMessage) message).getMessage();
+
+        System.out.println();
+        System.out.println(notification);
+        System.out.print(">>> ");
+    }
+
+    private void handleError(ServerMessage message) {
+        String error = ((ErrorMessage) message).getErrorMessage();
+
+        System.out.println();
+        System.err.println(error);
+        System.out.print(">>> ");
+    }
+
+
 }

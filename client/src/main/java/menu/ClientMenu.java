@@ -130,11 +130,15 @@ public class ClientMenu {
     }
 
     private String redrawBoard() {
-        if ("BLACK".equals(playerColor)) {
-            return boardPrinter.drawBlackBoard();
+        if (currentGame == null) {
+            return "No game loaded.";
         }
 
-        return boardPrinter.drawWhiteBoard();
+        if ("BLACK".equals(playerColor)) {
+            return boardPrinter.drawBlackBoard(currentGame.getGame());
+        }
+
+        return boardPrinter.drawWhiteBoard(currentGame.getGame());
     }
 
     private String leaveGame() throws Exception {

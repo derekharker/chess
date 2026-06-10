@@ -1,6 +1,6 @@
 package menu;
 
-import ui.EscapeSequences.*;
+import chess.*;
 
 import static ui.EscapeSequences.*;
 
@@ -11,6 +11,14 @@ public class BoardPrinter {
 
     public String drawBlackBoard() {
         return drawBoard(false);
+    }
+
+    public String drawWhiteBoard(ChessGame game) {
+        return drawBoard(game, true);
+    }
+
+    public String drawBlackBoard(ChessGame game) {
+        return drawBoard(game, false);
     }
 
     private String drawBoard(boolean whitePersp) {
@@ -83,7 +91,7 @@ public class BoardPrinter {
         return (rowNumber + i) % 2 == 1;
     }
 
-    private String pieceAt(char file, int rank) {
+    private String pieceAt(ChessGame game, char file, int rank) {
         if (rank == 2) {
             return WHITE_PAWN;
         }

@@ -6,7 +6,9 @@ import dataaccess.DataAccessException;
 import dataaccess.sqldaos.SQLAuthDAO;
 import dataaccess.sqldaos.SQLGameDAO;
 import dataaccess.sqldaos.SQLUserDAO;
+import io.javalin.http.staticfiles.Location;
 import websocket.WebSocketHandler;
+import java.time.Duration;
 
 import static dataaccess.DatabaseManager.configureDatabase;
 
@@ -16,7 +18,16 @@ public class Server {
 
     public Server() {
 
-        app = Javalin.create(config -> config.staticFiles.add("web"));
+        app = Javalin.create(config -> {
+            config.staticFiles.add("web", Location.CLASSPATH);
+
+            config.jetty.modifyServletContextHandler(handler -> {
+                handler.setAttribute(
+                        "org.eclipse.jetty.websocket.servlet.WebSocketServletFactory",
+                        java.time.Duration.ZERO
+                );
+            });
+        });
 
         try {
             configureDatabase();
@@ -31,6 +42,7 @@ public class Server {
         WebSocketHandler wsHandler = new WebSocketHandler(authDAO, gameDAO);
 
         app.ws("/ws", ws -> {
+            ws.idleTimeout(Duration.ZERO);
             ws.onMessage(ctx -> wsHandler.onMessage(ctx, ctx.message()));
             ws.onClose(wsHandler::onClose);
         });

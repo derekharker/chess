@@ -13,6 +13,11 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+import jakarta.websocket.CloseReason;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService; //to fix the timeout issue
+import java.util.concurrent.TimeUnit;
 
 import java.net.URI;
 import java.util.function.Consumer;
@@ -23,6 +28,9 @@ public class WebSocketFacade extends Endpoint {
     private final Gson gson = new Gson();
     private final Consumer<ServerMessage> messageHandler;
 
+    private final ScheduledExecutorService heartbeat =
+            Executors.newSingleThreadScheduledExecutor();
+
     public WebSocketFacade(String serverUrl, Consumer<ServerMessage> messageHandler) throws Exception {
         this.messageHandler = messageHandler;
         serverUrl = serverUrl.replace("http", "ws");
@@ -31,6 +39,19 @@ public class WebSocketFacade extends Endpoint {
         container.setDefaultMaxSessionIdleTimeout(0);
         jakarta.websocket.ClientEndpointConfig config = jakarta.websocket.ClientEndpointConfig.Builder.create().build();
         this.session = container.connectToServer(this, config, URI.create(serverUrl + "/ws"));
+
+        heartbeat.scheduleAtFixedRate(() -> {
+            try {
+                if (session != null && session.isOpen()) {
+                    sendCommand(new UserGameCommand(
+                            UserGameCommand.CommandType.PING,
+                            "",
+                            0
+                    ));
+                }
+            } catch (Exception ignored) {
+            }
+        }, 20, 20, TimeUnit.SECONDS);
     }
 
     @Override
@@ -60,6 +81,8 @@ public class WebSocketFacade extends Endpoint {
     }
 
     public void close() throws Exception {
+        heartbeat.shutdownNow();
+
         if (session != null && session.isOpen()) {
             session.close();
         }
@@ -72,5 +95,12 @@ public class WebSocketFacade extends Endpoint {
 
     public boolean isOpen() {
         return session != null && session.isOpen();
+    }
+
+    @Override
+    public void onClose(Session session, CloseReason closeReason) {
+        System.out.println();
+        System.out.println("WebSocket closed: " + closeReason);
+        System.out.print(">>> ");
     }
 }

@@ -81,13 +81,25 @@ public class WebSocketHandler {
             gameDAO.updateGame(gameData);
 
             sendToGame(command.getGameID(), new LoadGameMessage(gameData));
-            sendToOthers(command.getGameID(), ctx, new NotificationMessage(username + " made a move"));
+            String start = toChessSquare(move.getStartPosition());
+            String end = toChessSquare(move.getEndPosition());
 
-            sendGameStatusMessages(command.getGameID(), game, playerColor);
+            sendToOthers(
+                    command.getGameID(),
+                    ctx,
+                    new NotificationMessage(
+                            username + " moved from " + start + " to " + end));
+
+            sendGameStatusMessages(command.getGameID(), game, playerColor, gameData);
 
         } catch (Exception ex) {
             sendError(ctx, "Error: " + ex.getMessage());
         }
+    }
+
+    private String toChessSquare(ChessPosition pos) {
+        char file = (char) ('a' + pos.getColumn() - 1);
+        return "" + file + pos.getRow();
     }
 
     private ChessGame.TeamColor getPlayerColor(String username, GameData gameData) {
@@ -111,17 +123,19 @@ public class WebSocketHandler {
         }
     }
 
-    private void sendGameStatusMessages(int gameID, ChessGame game, ChessGame.TeamColor playerColor) {
+    private void sendGameStatusMessages(int gameID, ChessGame game, ChessGame.TeamColor playerColor, GameData gameData) {
         ChessGame.TeamColor opponent = playerColor == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+
+        String opponentName = opponent == ChessGame.TeamColor.WHITE ? gameData.getWhiteUsername() : gameData.getBlackUsername();
 
         if (game.isInCheckmate(opponent)) {
             game.setGameOver(true);
-            sendToGame(gameID, new NotificationMessage(opponent + " is in checkmate"));
+            sendToGame(gameID, new NotificationMessage(opponentName + " is in checkmate"));
         } else if (game.isInStalemate(opponent)) {
             game.setGameOver(true);
-            sendToGame(gameID, new NotificationMessage(opponent + " is in stalemate"));
+            sendToGame(gameID, new NotificationMessage(opponentName + " is in stalemate"));
         } else if (game.isInCheck(opponent)) {
-            sendToGame(gameID, new NotificationMessage(opponent + " is in check"));
+            sendToGame(gameID, new NotificationMessage(opponentName + " is in check"));
         }
     }
 

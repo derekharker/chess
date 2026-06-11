@@ -27,6 +27,8 @@ public class ClientMenu {
     private boolean loggedIn = false;
     private final int port;
 
+    private boolean awaitingResignConfirmation = false;
+
     private List<GameData> lastGames = new ArrayList<>();
     private final BoardPrinter boardPrinter = new BoardPrinter();
 
@@ -68,6 +70,22 @@ public class ClientMenu {
     }
 
     private String evalGameplay(String line) throws Exception {
+
+        if (awaitingResignConfirmation) {
+            awaitingResignConfirmation = false;
+
+            if (line.equalsIgnoreCase("yes")) {
+                webSocket.sendCommand(
+                        new UserGameCommand(
+                                UserGameCommand.CommandType.RESIGN,
+                                authToken,
+                                currentGameID));
+                return "";
+            }
+
+            return "Resignation cancelled.";
+        }
+
         var tokens = line.trim().split("\\s+");
         var command = tokens[0].toLowerCase();
 
@@ -217,13 +235,9 @@ public class ClientMenu {
         return "Left the game.";
     }
 
-    private String resignGame() throws Exception {
-        if (webSocket == null || !webSocket.isOpen()) {
-            return "WebSocket is closed. Leave and rejoin the game.";
-        }
-
-        webSocket.sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID));
-        return "";
+    private String resignGame() {
+        awaitingResignConfirmation = true;
+        return "Are you sure you want to resign? Type 'yes' to confirm.";
     }
 
     private String evalPreLogin(String line) throws ClientException {

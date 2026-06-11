@@ -15,11 +15,12 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 import jakarta.websocket.CloseReason;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService; //to fix the timeout issue
-import java.util.concurrent.TimeUnit;
+import java.nio.ByteBuffer;
 
 import java.net.URI;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class WebSocketFacade extends Endpoint {
@@ -43,15 +44,12 @@ public class WebSocketFacade extends Endpoint {
         heartbeat.scheduleAtFixedRate(() -> {
             try {
                 if (session != null && session.isOpen()) {
-                    sendCommand(new UserGameCommand(
-                            UserGameCommand.CommandType.PING,
-                            "",
-                            0
-                    ));
+                    session.getBasicRemote().sendPing(ByteBuffer.wrap(new byte[]{1}));
                 }
-            } catch (Exception ignored) {
+            } catch (Throwable e) {
+                System.out.println("[heartbeat failed] " + e.getClass().getName() + ": " + e.getMessage());
             }
-        }, 20, 20, TimeUnit.SECONDS);
+        }, 5, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -95,12 +93,5 @@ public class WebSocketFacade extends Endpoint {
 
     public boolean isOpen() {
         return session != null && session.isOpen();
-    }
-
-    @Override
-    public void onClose(Session session, CloseReason closeReason) {
-        System.out.println();
-        System.out.println("WebSocket closed: " + closeReason);
-        System.out.print(">>> ");
     }
 }

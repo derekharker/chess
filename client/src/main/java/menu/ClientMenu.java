@@ -83,10 +83,9 @@ public class ClientMenu {
     }
 
     private String movePiece(String[] tokens) throws Exception {
-        if (tokens.length != 3) {
-            return "Usage: move <FROM> <TO>, example: move e2 e4";
+        if (tokens.length != 3 && tokens.length != 4) {
+            return "Usage: move <FROM> <TO> [promotion], example: move e2 e4 queen";
         }
-
         if ("OBSERVER".equals(playerColor)) {
             return "Observers cannot move pieces.";
         }
@@ -94,7 +93,17 @@ public class ClientMenu {
         ChessPosition start = parsePosition(tokens[1]);
         ChessPosition end = parsePosition(tokens[2]);
 
-        ChessMove move = new ChessMove(start, end, null);
+        ChessPiece.PieceType promotionPiece = null;
+
+        if (tokens.length == 4) {
+            promotionPiece = parsePromotionPiece(tokens[3]);
+            if (promotionPiece == ChessPiece.PieceType.KING || promotionPiece == ChessPiece.PieceType.PAWN) {
+                return "Promotion must be queen, rook, bishop, or knight.";
+            }
+
+        }
+
+        ChessMove move = new ChessMove(start, end, promotionPiece);
 
         if (webSocket == null || !webSocket.isOpen()) {
             return "WebSocket is closed. Leave and rejoin the game.";
@@ -103,6 +112,18 @@ public class ClientMenu {
         webSocket.sendCommand(new MakeMoveCommand(authToken, currentGameID, move));
 
         return "";
+    }
+
+    private ChessPiece.PieceType parsePromotionPiece(String piece) {
+        return switch (piece.toLowerCase()) {
+            case "queen" -> ChessPiece.PieceType.QUEEN;
+            case "rook" -> ChessPiece.PieceType.ROOK;
+            case "bishop" -> ChessPiece.PieceType.BISHOP;
+            case "knight" -> ChessPiece.PieceType.KNIGHT;
+            default -> throw new IllegalArgumentException(
+                    "Promotion must be queen, rook, bishop, or knight."
+            );
+        };
     }
 
     private String highlightMoves(String[] tokens) {
@@ -160,7 +181,7 @@ public class ClientMenu {
     private String gameplayHelp() {
         return """
             redraw - redraw the chess board
-            move <FROM> <TO> - move a piece, example: move e2 e4
+            move <FROM> <TO> [promotion] - move a piece, example: move e2 e4
             highlight <SQUARE> - highlight legal moves, example: highlight e2
             resign - resign the game
             leave - leave the game

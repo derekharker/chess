@@ -42,7 +42,6 @@ public class Server {
         WebSocketHandler wsHandler = new WebSocketHandler(authDAO, gameDAO);
 
         app.ws("/ws", ws -> {
-            ws.idleTimeout(Duration.ZERO);
             ws.onMessage(ctx -> wsHandler.onMessage(ctx, ctx.message()));
             ws.onClose(wsHandler::onClose);
         });

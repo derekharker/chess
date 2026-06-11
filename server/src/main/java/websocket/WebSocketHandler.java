@@ -38,6 +38,7 @@ public class WebSocketHandler {
             }
             case RESIGN -> { resign(ctx, command);
             }
+            case PING -> {}
         }
     }
 
